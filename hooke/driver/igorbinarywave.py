@@ -3,7 +3,23 @@
 # igorbinarywave provides pure Python interface between IGOR Binary
 # Wave files and Numpy arrays.
 #
-# Copyright 2010 W. Trevor King <wking@drexel.edu>
+# Copyright (C) 2010 W. Trevor King <wking@drexel.edu>
+#
+# This file is part of Hooke.
+#
+# Hooke is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation, either
+# version 3 of the License, or (at your option) any later version.
+#
+# Hooke is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with Hooke.  If not, see
+# <http://www.gnu.org/licenses/>.
 
 # Based on WaveMetric's Technical Note 003, "Igor Binary Format"
 #   ftp://ftp.wavemetrics.net/IgorPro/Technical_Notes/TN003.zip
