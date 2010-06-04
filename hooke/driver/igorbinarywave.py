@@ -1,8 +1,5 @@
 #!/usr/bin/python
 #
-# igorbinarywave provides pure Python interface between IGOR Binary
-# Wave files and Numpy arrays.
-#
 # Copyright (C) 2010 W. Trevor King <wking@drexel.edu>
 #
 # This file is part of Hooke.
@@ -20,6 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with Hooke.  If not, see
 # <http://www.gnu.org/licenses/>.
+
+"""igorbinarywave provides pure Python interface between IGOR Binary
+Wave files and Numpy arrays.
+
+This is basically a stand-alone package that we bundle into Hooke for
+convenience.  It is used by the mfp*d drivers, whose data is saved in
+IBW files.
+"""
 
 # Based on WaveMetric's Technical Note 003, "Igor Binary Format"
 #   ftp://ftp.wavemetrics.net/IgorPro/Technical_Notes/TN003.zip
@@ -469,10 +474,15 @@ def loadibw(filename):
             ('%d, %d, %d, %s' % (waveDataSize, wave_info['npnts'], t.itemsize, t))
         tail_data = array.array('f', b[-tail:])
         data_b = buffer(buffer(tail_data) + f.read(waveDataSize-tail))
+        if version == 5:
+            shape = [n for n in wave_info['nDim'] if n > 0]
+        else:
+            shape = (wave_info['npnts'],)
         data = numpy.ndarray(
-            wave_info['npnts'],
+            shape=shape,
             dtype=t.newbyteorder(byteOrder),
-            buffer=data_b
+            buffer=data_b,
+            order='F',
             )
     finally:
         if not hasattr(filename, 'read'):
@@ -517,7 +527,7 @@ if __name__ == '__main__':
         options.outfile = sys.stdout
 
     data,bin_info,wave_info = loadibw(options.infile)
-    numpy.savetxt(options.outfile, data, fmt='%g', delimiter='\n')
+    numpy.savetxt(options.outfile, data, fmt='%g', delimiter='\t')
     if options.verbose > 0:
         import pprint
         pprint.pprint(bin_info)
