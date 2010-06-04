@@ -484,6 +484,75 @@ def loadibw(filename):
             buffer=data_b,
             order='F',
             )
+
+        if version == 1:
+            pass  # No post-data information
+        elif version == 2:
+            # Post-data info:
+            #   * 16 bytes of padding
+            #   * Optional wave note data
+            pad_b = buffer(f.read(16))  # skip the padding
+            assert max(pad_b) == 0, pad_b
+            bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
+        elif version == 3:
+            # Post-data info:
+            #   * 16 bytes of padding
+            #   * Optional wave note data
+            #   * Optional wave dependency formula
+            """Excerpted from TN003:
+
+            A wave has a dependency formula if it has been bound by a
+            statement such as "wave0 := sin(x)". In this example, the
+            dependency formula is "sin(x)". The formula is stored with
+            no trailing null byte.
+            """
+            pad_b = buffer(f.read(16))  # skip the padding
+            assert max(pad_b) == 0, pad_b
+            bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
+            bin_info['formula'] = str(f.read(bin_info['formulaSize'])).strip()
+        elif version == 5:
+            # Post-data info:
+            #   * Optional wave dependency formula
+            #   * Optional wave note data
+            #   * Optional extended data units data
+            #   * Optional extended dimension units data
+            #   * Optional dimension label data
+            #   * String indices used for text waves only
+            """Excerpted from TN003:
+
+            dataUnits - Present in versions 1, 2, 3, 5. The dataUnits
+              field stores the units for the data represented by the
+              wave. It is a C string terminated with a null
+              character. This field supports units of 0 to 3 bytes. In
+              version 1, 2 and 3 files, longer units can not be
+              represented. In version 5 files, longer units can be
+              stored using the optional extended data units section of
+              the file.
+
+            xUnits - Present in versions 1, 2, 3. The xUnits field
+              stores the X units for a wave. It is a C string
+              terminated with a null character.  This field supports
+              units of 0 to 3 bytes. In version 1, 2 and 3 files,
+              longer units can not be represented.
+
+            dimUnits - Present in version 5 only. This field is an
+              array of 4 strings, one for each possible wave
+              dimension. Each string supports units of 0 to 3
+              bytes. Longer units can be stored using the optional
+              extended dimension units section of the file.
+            """
+            bin_info['formula'] = str(f.read(bin_info['formulaSize'])).strip()
+            bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
+            bin_info['dataEUnits'] = str(f.read(bin_info['dataEUnitsSize'])).strip()
+            bin_info['dimEUnits'] = [
+                str(f.read(size)).strip() for size in bin_info['dimEUnitsSize']]
+            bin_info['dimLabels'] = []
+            for size in bin_info['dimLabelsSize']:
+                labels = str(f.read(size)).split(chr(0)) # split null-delimited strings
+                bin_info['dimLabels'].append([L for L in labels if len(L) > 0])
+            if wave_info['type'] == 0:  # text wave
+                bin_info['sIndices'] = f.read(bin_info['sIndicesSize'])
+
     finally:
         if not hasattr(filename, 'read'):
             f.close()
