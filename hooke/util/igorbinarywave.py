@@ -433,7 +433,7 @@ def checksum(buffer, byte_order, oldcksum, numbytes):
     return oldcksum & 0xffff
 
 # Translated from ReadWave()
-def loadibw(filename):
+def loadibw(filename, strict=True):
     if hasattr(filename, 'read'):
         f = filename  # filename is actually a stream object
     else:
@@ -492,7 +492,11 @@ def loadibw(filename):
             #   * 16 bytes of padding
             #   * Optional wave note data
             pad_b = buffer(f.read(16))  # skip the padding
-            assert max(pad_b) == 0, pad_b
+            if max(pad_b) != 0:
+                if strict:
+                    assert max(pad_b) == 0, pad_b
+                else:
+                    print sys.stderr, 'warning: post-data padding not zero: %s.' % pad_b
             bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
         elif version == 3:
             # Post-data info:
@@ -507,7 +511,11 @@ def loadibw(filename):
             no trailing null byte.
             """
             pad_b = buffer(f.read(16))  # skip the padding
-            assert max(pad_b) == 0, pad_b
+            if max(pad_b) != 0:
+                if strict:
+                    assert max(pad_b) == 0, pad_b
+                else:
+                    print sys.stderr, 'warning: post-data padding not zero: %s.' % pad_b
             bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
             bin_info['formula'] = str(f.read(bin_info['formulaSize'])).strip()
         elif version == 5:
@@ -578,6 +586,8 @@ if __name__ == '__main__':
                  default='-', help='File for ASCII output.')
     p.add_option('-v', '--verbose', dest='verbose', default=0,
                  action='count', help='Increment verbosity')
+    p.add_option('-n', '--not-strict', dest='strict', default=True,
+                 action='store_false', help='Attempt to parse invalid IBW files.')
     p.add_option('-t', '--test', dest='test', default=False,
                  action='store_true', help='Run internal tests and exit.')
 
@@ -595,7 +605,7 @@ if __name__ == '__main__':
     if options.outfile == '-':
         options.outfile = sys.stdout
 
-    data,bin_info,wave_info = loadibw(options.infile)
+    data,bin_info,wave_info = loadibw(options.infile, strict=options.strict)
     numpy.savetxt(options.outfile, data, fmt='%g', delimiter='\t')
     if options.verbose > 0:
         import pprint
