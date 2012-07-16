@@ -476,6 +476,7 @@ def loadibw(filename, strict=True):
     else:
         f = open(filename, 'rb')
     try:
+        BinHeaderCommon.set_byte_order('=')
         b = buffer(f.read(BinHeaderCommon.size))
         version = BinHeaderCommon.unpack_dict_from(b)['version']
         needToReorderBytes = need_to_reorder_bytes(version)
