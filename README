@@ -1,0 +1,87 @@
+igor: Interface for reading binary IGOR files.
+
+Read Igor Binary Waves (.ibw) and ... written by WaveMetrics' IGOR
+package.
+
+Installation
+============
+
+Packages
+--------
+
+Gentoo
+~~~~~~
+
+I've packaged `igor` for Gentoo.  You need layman_ and my `wtk
+overlay`_.  Install with::
+
+    # emerge -av app-portage/layman
+    # layman --add wtk
+    # emerge -av sci-misc/igor
+
+Dependencies
+------------
+
+If you're installing by hand or packaging calibcant for another
+distribution, you'll need the following dependencies:
+
+===========  =================  ============================
+Package      Debian_            Gentoo_
+===========  =================  ============================
+Numpy_       python-numpy       dev-python/numpy
+Matplotlib_  python-matplotlib  dev-python/matplotlib
+Nose_        python-nose        dev-python/nose
+===========  =================  ============================
+
+Installing by hand
+------------------
+
+`igor` is available as a Git_ repository::
+
+    $ git clone git://tremily.us/igor.git
+
+See the homepage_ for details.  To install the checkout, run the
+standard::
+
+    $ python setup.py install
+
+
+Usage
+=====
+
+See the module docstrings for simple examples.
+
+
+Testing
+=======
+
+Run internal unit tests with::
+
+    $ nosetests --with-doctest --doctest-tests igor
+
+
+Licence
+=======
+
+This project is distributed under the `GNU General Public License
+Version 3`_ or greater.
+
+
+Author
+======
+
+W. Trevor King
+wking@tremily.us
+Copyright 2008-2012
+
+
+.. _layman: http://layman.sourceforge.net/
+.. _wtk overlay: http://blog.tremily.us/posts/Gentoo_overlay/
+.. _Debian: http://www.debian.org/
+.. _Gentoo: http://www.gentoo.org/
+.. _NumPy: http://numpy.scipy.org/
+.. _Matplotlib: http://matplotlib.sourceforge.net/
+.. _Nose: http://somethingaboutorange.com/mrl/projects/nose/
+.. _Git: http://git-scm.com/
+.. _homepage: http://blog.tremily.us/posts/calibcant/
+.. _GNU General Public License Version 3: http://www.gnu.org/licenses/gpl.txt

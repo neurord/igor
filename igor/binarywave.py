@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Copyright (C) 2010 W. Trevor King <wking@drexel.edu>
 #
 # This file is part of Hooke.
@@ -18,13 +16,7 @@
 # License along with Hooke.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-"""igorbinarywave provides pure Python interface between IGOR Binary
-Wave files and Numpy arrays.
-
-This is basically a stand-alone package that we bundle into Hooke for
-convenience.  It is used by the mfp*d drivers, whose data is saved in
-IBW files.
-"""
+"Read IGOR Binary Wave files into Numpy arrays."
 
 # Based on WaveMetric's Technical Note 003, "Igor Binary Format"
 #   ftp://ftp.wavemetrics.net/IgorPro/Technical_Notes/TN003.zip
@@ -40,9 +32,6 @@ import sys
 import types
 
 import numpy
-
-
-__version__ = '0.1'
 
 
 class Field (object):
@@ -570,44 +559,3 @@ def loadibw(filename, strict=True):
 
 def saveibw(filename):
     raise NotImplementedError
-
-
-if __name__ == '__main__':
-    """IBW -> ASCII conversion
-    """
-    import optparse
-    import sys
-
-    p = optparse.OptionParser(version=__version__)
-
-    p.add_option('-f', '--infile', dest='infile', metavar='FILE',
-                 default='-', help='Input IGOR Binary Wave (.ibw) file.')
-    p.add_option('-o', '--outfile', dest='outfile', metavar='FILE',
-                 default='-', help='File for ASCII output.')
-    p.add_option('-v', '--verbose', dest='verbose', default=0,
-                 action='count', help='Increment verbosity')
-    p.add_option('-n', '--not-strict', dest='strict', default=True,
-                 action='store_false', help='Attempt to parse invalid IBW files.')
-    p.add_option('-t', '--test', dest='test', default=False,
-                 action='store_true', help='Run internal tests and exit.')
-
-    options,args = p.parse_args()
-
-    if options.test == True:
-        import doctest
-        num_failures,num_tests = doctest.testmod(verbose=options.verbose)
-        sys.exit(min(num_failures, 127))
-
-    if len(args) > 0 and options.infile == None:
-        options.infile = args[0]
-    if options.infile == '-':
-        options.infile = sys.stdin
-    if options.outfile == '-':
-        options.outfile = sys.stdout
-
-    data,bin_info,wave_info = loadibw(options.infile, strict=options.strict)
-    numpy.savetxt(options.outfile, data, fmt='%g', delimiter='\t')
-    if options.verbose > 0:
-        import pprint
-        pprint.pprint(bin_info)
-        pprint.pprint(wave_info)
