@@ -155,8 +155,8 @@ class Structure (struct.Struct):
                 if f.default != None:
                     dict[f.name] = f.default
                 else:
-                    raise ValueError('%s field not set for %s'
-                                     % f.name, self.__class__.__name__)
+                    raise ValueError('{} field not set for {}'.format(
+                            f.name, self.__class__.__name__))
         return dict
 
     def pack_dict(self, dict):
@@ -401,7 +401,9 @@ def version_structs(version, byte_order):
         bin = BinHeader5
         wave = WaveHeader5
     else:
-        raise ValueError('This does not appear to be a valid Igor binary wave file. The version field = %d.\n', version);
+        raise ValueError(
+            ('This does not appear to be a valid Igor binary wave file. '
+             'The version field = {}.\n').format(version))
     checkSumSize = bin.size + wave.size
     if version == 5:
         checkSumSize -= 4  # Version 5 checksum does not include the wData field.
@@ -441,7 +443,9 @@ def loadibw(filename, strict=True):
         b = buffer(b + f.read(bin_struct.size + wave_struct.size - BinHeaderCommon.size))
         c = checksum(b, byteOrder, 0, checkSumSize)
         if c != 0:
-            raise ValueError('Error in checksum - should be 0, is %d.  This does not appear to be a valid Igor binary wave file.' % c)
+            raise ValueError(
+                ('This does not appear to be a valid Igor binary wave file.  '
+                 'Error in checksum: should be 0, is {}.').format(c))
         bin_info = bin_struct.unpack_dict_from(b)
         wave_info = wave_struct.unpack_dict_from(b, offset=bin_struct.size)
         if wave_info['type'] == 0:
@@ -459,8 +463,9 @@ def loadibw(filename, strict=True):
         # (e.g. int32).  It has no effect on our local complex
         # integers.
         t = numpy.dtype(TYPE_TABLE[wave_info['type']])
-        assert waveDataSize == wave_info['npnts'] * t.itemsize, \
-            ('%d, %d, %d, %s' % (waveDataSize, wave_info['npnts'], t.itemsize, t))
+        assert waveDataSize == wave_info['npnts'] * t.itemsize, (
+            '{}, {}, {}, {}'.format(
+                waveDataSize, wave_info['npnts'], t.itemsize, t))
         tail_data = array.array('f', b[-tail:])
         data_b = buffer(buffer(tail_data) + f.read(waveDataSize-tail))
         if version == 5:
@@ -485,7 +490,9 @@ def loadibw(filename, strict=True):
                 if strict:
                     assert max(pad_b) == 0, pad_b
                 else:
-                    print sys.stderr, 'warning: post-data padding not zero: %s.' % pad_b
+                    sys.stderr.write(
+                        'warning: post-data padding not zero: {}\n'.format(
+                            pad_b))
             bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
         elif version == 3:
             # Post-data info:
@@ -504,7 +511,9 @@ def loadibw(filename, strict=True):
                 if strict:
                     assert max(pad_b) == 0, pad_b
                 else:
-                    print sys.stderr, 'warning: post-data padding not zero: %s.' % pad_b
+                    sys.stderr.write(
+                        'warning: post-data padding not zero: {}\n'.format(
+                            pad_b))
             bin_info['note'] = str(f.read(bin_info['noteSize'])).strip()
             bin_info['formula'] = str(f.read(bin_info['formulaSize'])).strip()
         elif version == 5:
