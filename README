@@ -57,7 +57,7 @@ Testing
 
 Run internal unit tests with::
 
-    $ nosetests --with-doctest --doctest-tests igor
+    $ nosetests --with-doctest --doctest-tests igor test
 
 
 Licence
