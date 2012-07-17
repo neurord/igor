@@ -64,6 +64,14 @@ def byte_order(needToReorderBytes):
     return '>'  # big-endian    
 
 # From ReadWave.c
+def need_to_reorder_bytes(version):
+    # If the low order byte of the version field of the BinHeader
+    # structure is zero then the file is from a platform that uses
+    # different byte-ordering and therefore all data will need to be
+    # reordered.
+    return version & 0xFF == 0
+
+# From ReadWave.c
 def checksum(buffer, byte_order, oldcksum, numbytes):
     x = _numpy.ndarray(
         (numbytes/2,), # 2 bytes to a short -- ignore trailing odd byte

@@ -36,6 +36,7 @@ from .struct import Structure as _Structure
 from .struct import Field as _Field
 from .util import assert_null as _assert_null
 from .util import byte_order as _byte_order
+from .util import need_to_reorder_bytes as _need_to_reorder_bytes
 from .util import checksum as _checksum
 
 
@@ -226,15 +227,6 @@ WaveHeader5 = _Structure(
 
 # End IGOR constants and typedefs from IgorBin.h
 
-# Begin functions from ReadWave.c
-
-def _need_to_reorder_bytes(version):
-    # If the low order byte of the version field of the BinHeader
-    # structure is zero then the file is from a platform that uses
-    # different byte-ordering and therefore all data will need to be
-    # reordered.
-    return version & 0xFF == 0
-
 def _version_structs(version, byte_order):
     if version == 1:
         bin = BinHeader1
@@ -271,7 +263,7 @@ def load(filename, strict=True):
         version = BinHeaderCommon.unpack_dict_from(b)['version']
         needToReorderBytes = _need_to_reorder_bytes(version)
         byteOrder = _byte_order(needToReorderBytes)
-        
+
         if needToReorderBytes:
             BinHeaderCommon.set_byte_order(byteOrder)
             version = BinHeaderCommon.unpack_dict_from(b)['version']
