@@ -530,14 +530,16 @@ def loadibw(filename, strict=True):
             shape = [n for n in wave_info['nDim'] if n > 0] or (0,)
         else:
             shape = (wave_info['npnts'],)
+        t = numpy.dtype(numpy.int8)  # setup a safe default
         if wave_info['type'] == 0:  # text wave
             shape = (waveDataSize,)
-            t = numpy.dtype(numpy.int8)
-        else:
+        elif wave_info['type'] in TYPE_TABLE or wave_info['npnts']:
             t = numpy.dtype(TYPE_TABLE[wave_info['type']])
             assert waveDataSize == wave_info['npnts'] * t.itemsize, (
                 '{}, {}, {}, {}'.format(
                     waveDataSize, wave_info['npnts'], t.itemsize, t))
+        else:
+            pass  # formula waves
         if wave_info['npnts'] == 0:
             data_b = buffer('')
         else:
