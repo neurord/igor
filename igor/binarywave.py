@@ -35,6 +35,8 @@ import numpy as _numpy
 from .struct import Structure as _Structure
 from .struct import Field as _Field
 from .util import assert_null as _assert_null
+from .util import byte_order as _byte_order
+from .util import checksum as _checksum
 
 
 # Numpy doesn't support complex integers by default, see
@@ -226,22 +228,14 @@ WaveHeader5 = _Structure(
 
 # Begin functions from ReadWave.c
 
-def need_to_reorder_bytes(version):
+def _need_to_reorder_bytes(version):
     # If the low order byte of the version field of the BinHeader
     # structure is zero then the file is from a platform that uses
     # different byte-ordering and therefore all data will need to be
     # reordered.
     return version & 0xFF == 0
 
-def byte_order(needToReorderBytes):
-    little_endian = _sys.byteorder == 'little'
-    if needToReorderBytes:
-        little_endian = not little_endian
-    if little_endian:
-        return '<'  # little-endian
-    return '>'  # big-endian    
-
-def version_structs(version, byte_order):
+def _version_structs(version, byte_order):
     if version == 1:
         bin = BinHeader1
         wave = WaveHeader2
@@ -265,20 +259,8 @@ def version_structs(version, byte_order):
     wave.set_byte_order(byte_order)
     return (bin, wave, checkSumSize)
 
-def checksum(buffer, byte_order, oldcksum, numbytes):
-    x = _numpy.ndarray(
-        (numbytes/2,), # 2 bytes to a short -- ignore trailing odd byte
-        dtype=_numpy.dtype(byte_order+'h'),
-        buffer=buffer)
-    oldcksum += x.sum()
-    if oldcksum > 2**31:  # fake the C implementation's int rollover
-        oldcksum %= 2**32
-        if oldcksum > 2**31:
-            oldcksum -= 2**31
-    return oldcksum & 0xffff
-
 # Translated from ReadWave()
-def loadibw(filename, strict=True):
+def load(filename, strict=True):
     if hasattr(filename, 'read'):
         f = filename  # filename is actually a stream object
     else:
@@ -287,16 +269,17 @@ def loadibw(filename, strict=True):
         BinHeaderCommon.set_byte_order('=')
         b = buffer(f.read(BinHeaderCommon.size))
         version = BinHeaderCommon.unpack_dict_from(b)['version']
-        needToReorderBytes = need_to_reorder_bytes(version)
-        byteOrder = byte_order(needToReorderBytes)
+        needToReorderBytes = _need_to_reorder_bytes(version)
+        byteOrder = _byte_order(needToReorderBytes)
         
         if needToReorderBytes:
             BinHeaderCommon.set_byte_order(byteOrder)
             version = BinHeaderCommon.unpack_dict_from(b)['version']
-        bin_struct,wave_struct,checkSumSize = version_structs(version, byteOrder)
+        bin_struct,wave_struct,checkSumSize = _version_structs(
+            version, byteOrder)
 
         b = buffer(b + f.read(bin_struct.size + wave_struct.size - BinHeaderCommon.size))
-        c = checksum(b, byteOrder, 0, checkSumSize)
+        c = _checksum(b, byteOrder, 0, checkSumSize)
         if c != 0:
             raise ValueError(
                 ('This does not appear to be a valid Igor binary wave file.  '
@@ -431,5 +414,5 @@ def loadibw(filename, strict=True):
     return data, bin_info, wave_info
 
 
-def saveibw(filename):
+def save(filename):
     raise NotImplementedError

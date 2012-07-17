@@ -699,7 +699,7 @@ import os.path
 from pprint import pformat
 import sys
 
-from igor.binarywave import loadibw
+from igor.binarywave import load as loadibw
 from igor.packed import load as loadpxp
 
 

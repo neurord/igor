@@ -4,6 +4,8 @@
 
 import sys as _sys
 
+import numpy as _numpy
+
 
 def hex_bytes(buffer, spaces=None):
     r"""Pretty-printing for binary buffers.
@@ -51,3 +53,25 @@ def assert_null(buffer, strict=True):
         else:
             _sys.stderr.write(
                 'warning: post-data padding not zero: {}\n'.format(hex_string))
+
+# From ReadWave.c
+def byte_order(needToReorderBytes):
+    little_endian = _sys.byteorder == 'little'
+    if needToReorderBytes:
+        little_endian = not little_endian
+    if little_endian:
+        return '<'  # little-endian
+    return '>'  # big-endian    
+
+# From ReadWave.c
+def checksum(buffer, byte_order, oldcksum, numbytes):
+    x = _numpy.ndarray(
+        (numbytes/2,), # 2 bytes to a short -- ignore trailing odd byte
+        dtype=_numpy.dtype(byte_order+'h'),
+        buffer=buffer)
+    oldcksum += x.sum()
+    if oldcksum > 2**31:  # fake the C implementation's int rollover
+        oldcksum %= 2**32
+        if oldcksum > 2**31:
+            oldcksum -= 2**31
+    return oldcksum & 0xffff
