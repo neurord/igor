@@ -1,5 +1,8 @@
 # Copyright
 
+from io import BytesIO as _BytesIO
+
+from .binarywave import load as _loadibw
 from .struct import Structure as _Structure
 from .struct import Field as _Field
 
@@ -37,7 +40,15 @@ class HistoryRecord (Record):
 
 
 class WaveRecord (Record):
-    pass
+    def __init__(self, *args, **kwargs):
+        super(WaveRecord, self).__init__(*args, **kwargs)
+        self.wave = _loadibw(_BytesIO(bytes(self.data)), strict=False)
+
+    def __str__(self):
+        return str(self.wave)
+
+    def __repr__(self):
+        return str(self.wave)
 
 
 class RecreationRecord (Record):
@@ -114,7 +125,7 @@ def load(filename, strict=True, ignore_unknown=True):
             if not b:
                 break
             header = PackedFileRecordHeader.unpack_dict_from(b)
-            data = f.read(header['numDataBytes'])
+            data = buffer(f.read(header['numDataBytes']))
             record_type = RECORD_TYPE.get(
                 header['recordType'] & PACKEDRECTYPE_MASK, UnknownRecord)
             if record_type in [UnknownRecord, UnusedRecord
