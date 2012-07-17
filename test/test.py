@@ -1,6 +1,6 @@
 r"""Test the igor module by loading sample files.
 
->>> dump('mac-double.ibw', strict=False)  # doctest: +REPORT_UDIFF
+>>> dumpibw('mac-double.ibw', strict=False)  # doctest: +REPORT_UDIFF
 array([ 5.,  4.,  3.,  2.,  1.])
 {'checksum': 25137,
  'note': '',
@@ -40,7 +40,7 @@ array([ 5.,  4.,  3.,  2.,  1.])
  'xUnits': array(['', '', '', ''],
       dtype='|S1')}
 
->>> dump('mac-textWave.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('mac-textWave.ibw')  # doctest: +REPORT_UDIFF
 array(['Mary', 'had', 'a', 'little', 'lamb'],
       dtype='|S6')
 {'checksum': 5554,
@@ -106,7 +106,7 @@ array(['Mary', 'had', 'a', 'little', 'lamb'],
  'whpad3': 0,
  'whpad4': 0}
 
->>> dump('mac-version2.ibw', strict=False)  # doctest: +REPORT_UDIFF
+>>> dumpibw('mac-version2.ibw', strict=False)  # doctest: +REPORT_UDIFF
 array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
 {'checksum': -16803,
  'note': 'This is a test.',
@@ -146,7 +146,7 @@ array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
  'xUnits': array(['', '', '', ''],
       dtype='|S1')}
 
->>> dump('mac-version3Dependent.ibw', strict=False)  # doctest: +REPORT_UDIFF
+>>> dumpibw('mac-version3Dependent.ibw', strict=False)  # doctest: +REPORT_UDIFF
 array([], dtype=int8)
 {'checksum': 0,
  'formula': '',
@@ -188,7 +188,7 @@ array([], dtype=int8)
  'xUnits': array(['', '', '', ''],
       dtype='|S1')}
 
->>> dump('mac-version5.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('mac-version5.ibw')  # doctest: +REPORT_UDIFF
 array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
 {'checksum': -12033,
  'dataEUnits': '',
@@ -252,7 +252,7 @@ array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
  'whpad3': 0,
  'whpad4': 0}
 
->>> dump('mac-zeroPointWave.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('mac-zeroPointWave.ibw')  # doctest: +REPORT_UDIFF
 array([], dtype=float32)
 {'checksum': -15649,
  'dataEUnits': '',
@@ -316,7 +316,7 @@ array([], dtype=float32)
  'whpad3': 0,
  'whpad4': 0}
 
->>> dump('win-double.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('win-double.ibw')  # doctest: +REPORT_UDIFF
 array([ 5.,  4.,  3.,  2.,  1.])
 {'checksum': 28962,
  'note': '',
@@ -356,7 +356,7 @@ array([ 5.,  4.,  3.,  2.,  1.])
  'xUnits': array(['', '', '', ''],
       dtype='|S1')}
 
->>> dump('win-textWave.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('win-textWave.ibw')  # doctest: +REPORT_UDIFF
 array(['Mary', 'had', 'a', 'little', 'lamb'],
       dtype='|S6')
 {'checksum': 184,
@@ -422,7 +422,7 @@ array(['Mary', 'had', 'a', 'little', 'lamb'],
  'whpad3': 0,
  'whpad4': 0}
 
->>> dump('win-version2.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('win-version2.ibw')  # doctest: +REPORT_UDIFF
 array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
 {'checksum': 1047,
  'note': 'This is a test.',
@@ -462,7 +462,7 @@ array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
  'xUnits': array(['', '', '', ''],
       dtype='|S1')}
 
->>> dump('win-version5.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('win-version5.ibw')  # doctest: +REPORT_UDIFF
 array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
 {'checksum': 13214,
  'dataEUnits': '',
@@ -526,7 +526,7 @@ array([ 5.,  4.,  3.,  2.,  1.], dtype=float32)
  'whpad3': 0,
  'whpad4': 0}
 
->>> dump('win-zeroPointWave.ibw')  # doctest: +REPORT_UDIFF
+>>> dumpibw('win-zeroPointWave.ibw')  # doctest: +REPORT_UDIFF
 array([], dtype=float32)
 {'checksum': 27541,
  'dataEUnits': '',
@@ -589,6 +589,110 @@ array([], dtype=float32)
  'whpad2': 0,
  'whpad3': 0,
  'whpad4': 0}
+
+>>> dumppxp('polar-graphs-demo.pxp')    # doctest: +REPORT_UDIFF, +ELLIPSIS
+record 0:
+<UnknownRecord-11 ...>
+record 1:
+<UnknownRecord-12 ...>
+record 2:
+<UnknownRecord-13 ...>
+record 3:
+<UnknownRecord-13 ...>
+record 4:
+<UnknownRecord-13 ...>
+record 5:
+<UnknownRecord-13 ...>
+record 6:
+<UnknownRecord-13 ...>
+record 7:
+<UnknownRecord-13 ...>
+record 8:
+<UnknownRecord-13 ...>
+record 9:
+<UnknownRecord-14 ...>
+record 10:
+<UnknownRecord-15 ...>
+record 11:
+<UnknownRecord-16 ...>
+record 12:
+<UnknownRecord-16 ...>
+record 13:
+<UnknownRecord-17 ...>
+record 14:
+<UnknownRecord-17 ...>
+record 15:
+<UnknownRecord-17 ...>
+record 16:
+<UnknownRecord-17 ...>
+record 17:
+<UnknownRecord-17 ...>
+record 18:
+<UnknownRecord-17 ...>
+record 19:
+<UnknownRecord-16 ...>
+record 20:
+<UnknownRecord-17 ...>
+record 21:
+<UnknownRecord-17 ...>
+record 22:
+<UnknownRecord-17 ...>
+record 23:
+<UnknownRecord-17 ...>
+record 24:
+<UnknownRecord-17 ...>
+record 25:
+<UnknownRecord-17 ...>
+record 26:
+<UnknownRecord-18 ...>
+record 27:
+<UnknownRecord-11 ...>
+record 28:
+<UnknownRecord-26 ...>
+record 29:
+<UnknownRecord-26 ...>
+record 30:
+<VariablesRecord ...>
+record 31:
+<HistoryRecord ...>
+record 32:
+<WaveRecord ...>
+record 33:
+<WaveRecord ...>
+record 34:
+<WaveRecord ...>
+record 35:
+<WaveRecord ...>
+record 36:
+<WaveRecord ...>
+record 37:
+<WaveRecord ...>
+record 38:
+<WaveRecord ...>
+record 39:
+<WaveRecord ...>
+record 40:
+<FolderStartRecord ...>
+record 41:
+<FolderStartRecord ...>
+record 42:
+<VariablesRecord ...>
+record 43:
+<FolderEndRecord ...>
+record 44:
+<FolderStartRecord ...>
+record 45:
+<VariablesRecord ...>
+record 46:
+<FolderEndRecord ...>
+record 47:
+<FolderEndRecord ...>
+record 48:
+<RecreationRecord ...>
+record 49:
+<GetHistoryRecord ...>
+record 50:
+<ProcedureRecord ...>
 """
 
 import os.path
@@ -596,18 +700,27 @@ from pprint import pformat
 import sys
 
 from igor.binarywave import loadibw
+from igor.packed import load as loadpxp
 
 
 _this_dir = os.path.dirname(__file__)
 _data_dir = os.path.join(_this_dir, 'data')
 
-def dump(filename, strict=True):
+def dumpibw(filename, strict=True):
     sys.stderr.write('Testing {}\n'.format(filename))
     path = os.path.join(_data_dir, filename)
     data,bin_info,wave_info = loadibw(path, strict=strict)
     pprint(data)
     pprint(bin_info)
     pprint(wave_info)
+
+def dumppxp(filename, strict=True):
+    sys.stderr.write('Testing {}\n'.format(filename))
+    path = os.path.join(_data_dir, filename)
+    records = loadpxp(path, strict=strict)
+    for i,record in enumerate(records):
+        print('record {}:'.format(i))
+        pprint(record)
 
 def pprint(data):
     lines = pformat(data).splitlines()
