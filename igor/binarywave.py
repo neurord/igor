@@ -34,6 +34,9 @@ import types
 import numpy
 
 
+_buffer = buffer  # save builtin buffer for clobbered situations
+
+
 class Field (object):
     """Represent a Structure field.
 
@@ -172,8 +175,24 @@ class Structure (struct.Struct):
         return self._unflatten_args(struct.Struct.unpack(self, string))
 
     def unpack_from(self, buffer, offset=0):
-        return self._unflatten_args(
-            struct.Struct.unpack_from(self, buffer, offset))
+        try:
+            args = struct.Struct.unpack_from(self, buffer, offset)
+        except struct.error as e:
+            if not self.name in ('WaveHeader2', 'WaveHeader5'):
+                raise
+            # HACK!  For WaveHeader5, when npnts is 0, wData is
+            # optional.  If we couldn't unpack the structure, fill in
+            # wData with zeros and try again, asserting that npnts is
+            # zero.
+            if len(buffer) - offset < self.size:
+                # missing wData?  Pad with zeros
+                buffer += _buffer('\x00'*(self.size + offset - len(buffer)))
+            args = struct.Struct.unpack_from(self, buffer, offset)
+            unpacked = self._unflatten_args(args)
+            data = dict(zip([f.name for f in self.fields],
+                            unpacked))
+            assert data['npnts'] == 0, data['npnts']
+        return self._unflatten_args(args)
 
     def unpack_dict(self, string):
         return dict(zip([f.name for f in self.fields],
@@ -513,12 +532,15 @@ def loadibw(filename, strict=True):
         assert waveDataSize == wave_info['npnts'] * t.itemsize, (
             '{}, {}, {}, {}'.format(
                 waveDataSize, wave_info['npnts'], t.itemsize, t))
-        tail_data = array.array('f', b[-tail:])
-        data_b = buffer(buffer(tail_data) + f.read(waveDataSize-tail))
         if version == 5:
-            shape = [n for n in wave_info['nDim'] if n > 0]
+            shape = [n for n in wave_info['nDim'] if n > 0] or (0,)
         else:
             shape = (wave_info['npnts'],)
+        if wave_info['npnts'] == 0:
+            data_b = buffer('')
+        else:
+            tail_data = array.array('f', b[-tail:])
+            data_b = buffer(buffer(tail_data) + f.read(waveDataSize-tail))
         data = numpy.ndarray(
             shape=shape,
             dtype=t.newbyteorder(byteOrder),
