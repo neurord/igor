@@ -514,8 +514,6 @@ def loadibw(filename, strict=True):
                  'Error in checksum: should be 0, is {}.').format(c))
         bin_info = bin_struct.unpack_dict_from(b)
         wave_info = wave_struct.unpack_dict_from(b, offset=bin_struct.size)
-        if wave_info['type'] == 0:
-            raise NotImplementedError('Text wave')
         if version in [1,2,3]:
             tail = 16  # 16 = size of wData field in WaveHeader2 structure
             waveDataSize = bin_info['wfmSize'] - wave_struct.size
@@ -528,14 +526,18 @@ def loadibw(filename, strict=True):
         # getset_descriptor issues with the builtin Numpy types
         # (e.g. int32).  It has no effect on our local complex
         # integers.
-        t = numpy.dtype(TYPE_TABLE[wave_info['type']])
-        assert waveDataSize == wave_info['npnts'] * t.itemsize, (
-            '{}, {}, {}, {}'.format(
-                waveDataSize, wave_info['npnts'], t.itemsize, t))
         if version == 5:
             shape = [n for n in wave_info['nDim'] if n > 0] or (0,)
         else:
             shape = (wave_info['npnts'],)
+        if wave_info['type'] == 0:  # text wave
+            shape = (waveDataSize,)
+            t = numpy.dtype(numpy.int8)
+        else:
+            t = numpy.dtype(TYPE_TABLE[wave_info['type']])
+            assert waveDataSize == wave_info['npnts'] * t.itemsize, (
+                '{}, {}, {}, {}'.format(
+                    waveDataSize, wave_info['npnts'], t.itemsize, t))
         if wave_info['npnts'] == 0:
             data_b = buffer('')
         else:
@@ -616,6 +618,21 @@ def loadibw(filename, strict=True):
             if wave_info['type'] == 0:  # text wave
                 bin_info['sIndices'] = f.read(bin_info['sIndicesSize'])
 
+        if wave_info['type'] == 0:  # text wave
+            # use sIndices to split data into strings
+            strings = []
+            start = 0
+            for i,string_index in enumerate(bin_info['sIndices']):
+                offset = ord(string_index)
+                if offset > start:
+                    string = data[start:offset]
+                    strings.append(''.join(chr(x) for x in string))
+                    start = offset
+                else:
+                    assert offset == 0, offset
+            data = numpy.array(strings)
+            shape = [n for n in wave_info['nDim'] if n > 0] or (0,)
+            data.reshape(shape)
     finally:
         if not hasattr(filename, 'read'):
             f.close()
