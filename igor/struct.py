@@ -201,7 +201,7 @@ class Field (object):
                         item = None
                     for arg in self.pack_item(item):
                         yield arg
-        else:
+        elif self.item_count:
             for arg in self.pack_item(data):
                 yield arg
 
@@ -354,6 +354,26 @@ class Structure (_struct.Struct):
     '\x00\x01\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f '
     >>> b[17:]
     '!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+    If you set ``count=0``, the field is ignored.
+
+    >>> experiment2 = Structure('experiment', fields=[
+    ...     version, Field('f', 'ignored', count=0), runs], byte_order='>')
+    >>> experiment2.format
+    '>HIhhhhhhIhhhhhh'
+    >>> d = experiment2.unpack(b)
+    >>> pprint(d)
+    {'ignored': array([], dtype=float64),
+     'runs': [{'data': array([[5655, 6169, 6683],
+           [7197, 7711, 8225]]),
+               'time': 303240213},
+              {'data': array([[0, 0, 0],
+           [0, 0, 0]]), 'time': 0}],
+     'version': 1}
+    >>> del d['ignored']
+    >>> b2 = experiment2.pack(d)
+    >>> b2 == b
+    True
     """
     def __init__(self, name, fields, byte_order='='):
         # '=' for native byte order, standard size and alignment
@@ -397,6 +417,8 @@ class Structure (_struct.Struct):
         for f in self.fields:
             try:
                 data = item[f.name]
+            except TypeError:
+                raise ValueError((f.name, item))
             except KeyError:
                 data = None
             for arg in f.pack_data(data):
