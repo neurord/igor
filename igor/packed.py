@@ -124,7 +124,7 @@ def load(filename, strict=True, ignore_unknown=True):
             b = buffer(f.read(PackedFileRecordHeader.size))
             if not b:
                 break
-            header = PackedFileRecordHeader.unpack_dict_from(b)
+            header = PackedFileRecordHeader.unpack_from(b)
             data = buffer(f.read(header['numDataBytes']))
             record_type = RECORD_TYPE.get(
                 header['recordType'] & PACKEDRECTYPE_MASK, UnknownRecord)

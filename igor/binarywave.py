@@ -260,13 +260,13 @@ def load(filename, strict=True):
     try:
         BinHeaderCommon.set_byte_order('=')
         b = buffer(f.read(BinHeaderCommon.size))
-        version = BinHeaderCommon.unpack_dict_from(b)['version']
+        version = BinHeaderCommon.unpack_from(b)['version']
         needToReorderBytes = _need_to_reorder_bytes(version)
         byteOrder = _byte_order(needToReorderBytes)
 
         if needToReorderBytes:
             BinHeaderCommon.set_byte_order(byteOrder)
-            version = BinHeaderCommon.unpack_dict_from(b)['version']
+            version = BinHeaderCommon.unpack_from(b)['version']
         bin_struct,wave_struct,checkSumSize = _version_structs(
             version, byteOrder)
 
@@ -276,8 +276,8 @@ def load(filename, strict=True):
             raise ValueError(
                 ('This does not appear to be a valid Igor binary wave file.  '
                  'Error in checksum: should be 0, is {}.').format(c))
-        bin_info = bin_struct.unpack_dict_from(b)
-        wave_info = wave_struct.unpack_dict_from(b, offset=bin_struct.size)
+        bin_info = bin_struct.unpack_from(b)
+        wave_info = wave_struct.unpack_from(b, offset=bin_struct.size)
         if version in [1,2,3]:
             tail = 16  # 16 = size of wData field in WaveHeader2 structure
             waveDataSize = bin_info['wfmSize'] - wave_struct.size
