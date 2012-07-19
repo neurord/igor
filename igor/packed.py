@@ -1,94 +1,15 @@
 # Copyright
 
-from io import BytesIO as _BytesIO
-
-from .binarywave import load as _loadibw
-from .struct import Structure as _Structure
-from .struct import Field as _Field
-
 "Read IGOR Packed Experiment files files into records."
 
+from .struct import Structure as _Structure
+from .struct import Field as _Field
+from .util import byte_order as _byte_order
+from .util import need_to_reorder_bytes as _need_to_reorder_bytes
+from .record import RECORD_TYPE as _RECORD_TYPE
+from .record.base import UnknownRecord as _UnknownRecord
+from .record.base import UnusedRecord as _UnusedRecord
 
-class Record (object):
-    def __init__(self, header, data):
-        self.header = header
-        self.data = data
-
-    def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
-        return '<{} {}>'.format(self.__class__.__name__, id(self))
-
-
-class UnknownRecord (Record):
-    def __repr__(self):
-        return '<{}-{} {}>'.format(
-            self.__class__.__name__, self.header['recordType'], id(self))
-
-
-class UnusedRecord (Record):
-    pass
-
-
-class VariablesRecord (Record):
-    pass
-
-
-class HistoryRecord (Record):
-    pass
-
-
-class WaveRecord (Record):
-    def __init__(self, *args, **kwargs):
-        super(WaveRecord, self).__init__(*args, **kwargs)
-        self.wave = _loadibw(_BytesIO(bytes(self.data)), strict=False)
-
-    def __str__(self):
-        return str(self.wave)
-
-    def __repr__(self):
-        return str(self.wave)
-
-
-class RecreationRecord (Record):
-    pass
-
-
-class ProcedureRecord (Record):
-    pass
-
-
-class GetHistoryRecord (Record):
-    pass
-
-
-class PackedFileRecord (Record):
-    pass
-
-
-class FolderStartRecord (Record):
-    pass
-
-
-class FolderEndRecord (Record):
-    pass
-
-
-# From PackedFile.h
-RECORD_TYPE = {
-    0: UnusedRecord,
-    1: VariablesRecord,
-    2: HistoryRecord,
-    3: WaveRecord,
-    4: RecreationRecord,
-    5: ProcedureRecord,
-    6: UnusedRecord,
-    7: GetHistoryRecord,
-    8: PackedFileRecord,
-    9: FolderStartRecord,
-    10: FolderEndRecord,
-    }
 
 # Igor writes other kinds of records in a packed experiment file, for
 # storing things like pictures, page setup records, and miscellaneous
@@ -118,21 +39,29 @@ def load(filename, strict=True, ignore_unknown=True):
         f = filename  # filename is actually a stream object
     else:
         f = open(filename, 'rb')
+    byte_order = None
+    initial_byte_order = '='
     try:
         while True:
-            PackedFileRecordHeader.set_byte_order('=')
             b = buffer(f.read(PackedFileRecordHeader.size))
             if not b:
                 break
+            PackedFileRecordHeader.set_byte_order(initial_byte_order)
             header = PackedFileRecordHeader.unpack_from(b)
+            if header['version'] and not byte_order:
+                need_to_reorder = _need_to_reorder_bytes(header['version'])
+                byte_order = initial_byte_order = _byte_order(need_to_reorder)
+                if need_to_reorder:
+                    PackedFileRecordHeader.set_byte_order(byte_order)
+                    header = PackedFileRecordHeader.unpack_from(b)
             data = buffer(f.read(header['numDataBytes']))
-            record_type = RECORD_TYPE.get(
-                header['recordType'] & PACKEDRECTYPE_MASK, UnknownRecord)
-            if record_type in [UnknownRecord, UnusedRecord
+            record_type = _RECORD_TYPE.get(
+                header['recordType'] & PACKEDRECTYPE_MASK, _UnknownRecord)
+            if record_type in [_UnknownRecord, _UnusedRecord
                                ] and not ignore_unknown:
                 raise KeyError('unkown record type {}'.format(
                         header['recordType']))
-            records.append(record_type(header, data))
+            records.append(record_type(header, data, byte_order=byte_order))
     finally:
         if not hasattr(filename, 'read'):
             f.close()

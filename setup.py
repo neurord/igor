@@ -32,6 +32,7 @@ setup(name=package_name,
         ],
       packages=[
         'igor',
+        'igor.record',
         ],
       scripts=[
         'bin/igorbinarywave.py',

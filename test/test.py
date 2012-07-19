@@ -1,3 +1,5 @@
+# Copyright
+
 r"""Test the igor module by loading sample files.
 
 >>> dumpibw('mac-double.ibw', strict=False)  # doctest: +REPORT_UDIFF
@@ -652,7 +654,15 @@ record 28:
 record 29:
 <UnknownRecord-26 ...>
 record 30:
-<VariablesRecord ...>
+{'header': {'numSysVars': 21,
+            'numUserStrs': 0,
+            'numUserVars': 0,
+            'version': 1},
+ 'sysVars': array([   0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,
+          0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,
+          0.,    0.,  128.]),
+ 'userStrs': {},
+ 'userVars': {}}
 record 31:
 <HistoryRecord ...>
 record 32:
@@ -1242,13 +1252,70 @@ record 40:
 record 41:
 <FolderStartRecord ...>
 record 42:
-<VariablesRecord ...>
+{'header': {'numSysVars': 21,
+            'numUserStrs': 6,
+            'numUserVars': 0,
+            'version': 1},
+ 'sysVars': array([   0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,
+          0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,
+          0.,    0.,  128.]),
+ 'userStrs': {'u_dataBase': ';PolarGraph0:,...,useCircles=2,maxArcLine=6;',
+              'u_dbBadStringChars': ',;=:',
+              'u_dbCurrBag': 'PolarGraph1',
+              'u_dbCurrContents': ',appendRadius=radiusQ1,...,useCircles=2,maxArcLine=6;',
+              'u_dbReplaceBadChars': '\xa9\xae\x99\x9f',
+              'u_str': '2'},
+ 'userVars': {}}
 record 43:
 <FolderEndRecord ...>
 record 44:
 <FolderStartRecord ...>
 record 45:
-<VariablesRecord ...>
+{'header': {'numSysVars': 21,
+            'numUserStrs': 10,
+            'numUserVars': 28,
+            'version': 1},
+ 'sysVars': array([   0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,
+          0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,    0.,
+          0.,    0.,  128.]),
+ 'userStrs': {'u_colorList': 'black;blue;green;cyan;red;magenta;yellow;white;special',
+              'u_debugStr': 'Turn Debugging On',
+              'u_polAngleAxesWherePop': 'Off;Radius Start;Radius End;Radius Start and End;All Major Radii;At Listed Radii',
+              'u_polAngleUnitsPop': 'deg;rad',
+              'u_polLineStylePop': 'solid;dash 1;dash 2;dash 3;dash 4;dash 5;dash 6;dash 7;dash 8;dash 9;dash 10;dash 11;dash 12;dash 13;dash 14;dash 15;dash 16;dash 17;',
+              'u_polOffOn': 'Off;On',
+              'u_polRadAxesWherePop': '  Off;  Angle Start;  Angle Middle;  Angle End;  Angle Start and End;  0;  90;  180; -90;  0, 90;  90, 180; -180, -90; -90, 0;  0, 180;  90, -90;  0, 90, 180, -90;  All Major Angles;  At Listed Angles',
+              'u_polRotPop': ' -90;  0; +90; +180',
+              'u_popup': '',
+              'u_prompt': ''},
+ 'userVars': {'V_bottom': 232.0,
+              'V_left': 1.0,
+              'V_max': 2.4158518093414401,
+              'V_min': -2.1848498883412,
+              'V_right': 232.0,
+              'V_top': 1.0,
+              'u_UniqWaveNdx': 8.0,
+              'u_UniqWinNdx': 3.0,
+              'u_angle0': 0.0,
+              'u_angleRange': 6.2831853071795862,
+              'u_debug': 0.0,
+              'u_majorDelta': 0.0,
+              'u_numPlaces': 0.0,
+              'u_polAngle0': 0.26179938779914941,
+              'u_polAngleRange': 1.0471975511965976,
+              'u_polInnerRadius': -20.0,
+              'u_polMajorAngleInc': 0.26179938779914941,
+              'u_polMajorRadiusInc': 10.0,
+              'u_polMinorAngleTicks': 3.0,
+              'u_polMinorRadiusTicks': 1.0,
+              'u_polOuterRadius': 0.0,
+              'u_segsPerMinorArc': 3.0,
+              'u_tickDelta': 0.0,
+              'u_var': 0.0,
+              'u_x1': 11.450159535018935,
+              'u_x2': 12.079591517721363,
+              'u_y1': 42.732577139459856,
+              'u_y2': 45.081649278814126}}
 record 46:
 <FolderEndRecord ...>
 record 47:
@@ -1267,7 +1334,8 @@ import sys
 
 from igor.binarywave import load as loadibw
 from igor.packed import load as loadpxp
-from igor.packed import WaveRecord
+from igor.record.variables import VariablesRecord
+from igor.record.wave import WaveRecord
 
 
 _this_dir = os.path.dirname(__file__)
@@ -1287,7 +1355,9 @@ def dumppxp(filename, strict=True):
     records = loadpxp(path, strict=strict)
     for i,record in enumerate(records):
         print('record {}:'.format(i))
-        if isinstance(record, WaveRecord):
+        if isinstance(record, VariablesRecord):
+            pprint(record.variables)
+        elif isinstance(record, WaveRecord):
             pprint(record.wave)
         else:
             pprint(record)
