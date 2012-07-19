@@ -1325,7 +1325,7 @@ record 48:
 record 49:
 ''
 record 50:
-<ProcedureRecord ...>
+'#include <Polar Graphs> version >= 3.0\n'
 """
 
 import os.path

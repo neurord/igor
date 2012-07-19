@@ -1,7 +1,7 @@
 # Copyright
 
-from .base import Record
+from .base import TextRecord
 
 
-class ProcedureRecord (Record):
+class ProcedureRecord (TextRecord):
     pass
