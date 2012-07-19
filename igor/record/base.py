@@ -22,3 +22,14 @@ class UnknownRecord (Record):
 
 class UnusedRecord (Record):
     pass
+
+
+# Copyright
+
+from .base import Record
+
+
+class TextRecord (Record):
+    def __init__(self, *args, **kwargs):
+        super(TextRecord, self).__init__(*args, **kwargs)
+        self.text = str(self.data).replace('\r\n', '\n').replace('\r', '\n')

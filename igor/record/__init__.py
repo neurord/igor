@@ -5,11 +5,9 @@
 
 from .base import Record, UnknownRecord, UnusedRecord
 from .variables import VariablesRecord
-from .history import HistoryRecord
+from .history import HistoryRecord, RecreationRecord, GetHistoryRecord
 from .wave import WaveRecord
-from .recreation import RecreationRecord
 from .procedure import ProcedureRecord
-from .gethistory import GetHistoryRecord
 from .packedfile import PackedFileRecord
 from .folder import FolderStartRecord, FolderEndRecord
 

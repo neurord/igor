@@ -664,7 +664,7 @@ record 30:
  'userStrs': {},
  'userVars': {}}
 record 31:
-<HistoryRecord ...>
+'\x95 Polar Graphs Demo, v3.01\n\n'
 record 32:
 (array([ 0.30000001,  0.5448544 ,  0.77480197,  0.97584349,  1.13573945,
         1.24475539,  1.2962544 ,  1.28710103,  1.21785283,  1.09272552,
@@ -1321,9 +1321,9 @@ record 46:
 record 47:
 <FolderEndRecord ...>
 record 48:
-<RecreationRecord ...>
+'| Platform=Windows95, IGORVersion=3.130\n\n\n\nMoveWindow/P 5.25,40.25,504.75,335\n...hook=PolarWindowHook\nEndMacro\n'
 record 49:
-<GetHistoryRecord ...>
+''
 record 50:
 <ProcedureRecord ...>
 """
@@ -1334,6 +1334,7 @@ import sys
 
 from igor.binarywave import load as loadibw
 from igor.packed import load as loadpxp
+from igor.record.base import TextRecord
 from igor.record.variables import VariablesRecord
 from igor.record.wave import WaveRecord
 
@@ -1355,7 +1356,9 @@ def dumppxp(filename, strict=True):
     records = loadpxp(path, strict=strict)
     for i,record in enumerate(records):
         print('record {}:'.format(i))
-        if isinstance(record, VariablesRecord):
+        if isinstance(record, TextRecord):
+            pprint(record.text)
+        elif isinstance(record, VariablesRecord):
             pprint(record.variables)
         elif isinstance(record, WaveRecord):
             pprint(record.wave)

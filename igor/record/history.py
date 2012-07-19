@@ -1,7 +1,15 @@
 # Copyright
 
-from .base import Record
+from .base import TextRecord
 
 
-class HistoryRecord (Record):
+class HistoryRecord (TextRecord):
+    pass
+
+
+class RecreationRecord (TextRecord):
+    pass
+
+
+class GetHistoryRecord (TextRecord):
     pass
