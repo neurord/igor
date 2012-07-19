@@ -382,20 +382,29 @@ def load(filename, strict=True):
                 labels = str(f.read(size)).split(chr(0)) # split null-delimited strings
                 bin_info['dimLabels'].append([L for L in labels if len(L) > 0])
             if wave_info['type'] == 0:  # text wave
-                bin_info['sIndices'] = f.read(bin_info['sIndicesSize'])
+                sIndices_data = f.read(bin_info['sIndicesSize'])
+                sIndices_count = bin_info['sIndicesSize']/4
+                bin_info['sIndices'] = _numpy.ndarray(
+                    shape=(sIndices_count,),
+                    dtype=_numpy.dtype(
+                        _numpy.uint32()).newbyteorder(byteOrder),
+                    buffer=sIndices_data,
+                    order='F',
+                    )
 
         if wave_info['type'] == 0:  # text wave
             # use sIndices to split data into strings
             strings = []
             start = 0
-            for i,string_index in enumerate(bin_info['sIndices']):
-                offset = ord(string_index)
+            for i,offset in enumerate(bin_info['sIndices']):
                 if offset > start:
                     string = data[start:offset]
                     strings.append(''.join(chr(x) for x in string))
                     start = offset
+                elif offset == start:
+                    strings.append('')
                 else:
-                    assert offset == 0, offset
+                    raise ValueError((offset, bin_info['sIndices']))
             data = _numpy.array(strings)
             shape = [n for n in wave_info['nDim'] if n > 0] or (0,)
             data.reshape(shape)
