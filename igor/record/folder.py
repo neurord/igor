@@ -1,11 +1,11 @@
 # Copyright
 
-from .base import Record
+from .base import TextRecord
 
 
-class FolderStartRecord (Record):
+class FolderStartRecord (TextRecord):
     pass
 
 
-class FolderEndRecord (Record):
+class FolderEndRecord (TextRecord):
     pass

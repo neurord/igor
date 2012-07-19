@@ -1248,9 +1248,9 @@ record 39:
   'whpad3': 0,
   'whpad4': 0})
 record 40:
-<FolderStartRecord ...>
+'Packages'
 record 41:
-<FolderStartRecord ...>
+'WMDataBase'
 record 42:
 {'header': {'numSysVars': 21,
             'numUserStrs': 6,
@@ -1267,9 +1267,9 @@ record 42:
               'u_str': '2'},
  'userVars': {}}
 record 43:
-<FolderEndRecord ...>
+''
 record 44:
-<FolderStartRecord ...>
+'PolarGraphs'
 record 45:
 {'header': {'numSysVars': 21,
             'numUserStrs': 10,
@@ -1317,15 +1317,28 @@ record 45:
               'u_y1': 42.732577139459856,
               'u_y2': 45.081649278814126}}
 record 46:
-<FolderEndRecord ...>
+''
 record 47:
-<FolderEndRecord ...>
+''
 record 48:
 '| Platform=Windows95, IGORVersion=3.130\n\n\n\nMoveWindow/P 5.25,40.25,504.75,335\n...hook=PolarWindowHook\nEndMacro\n'
 record 49:
 ''
 record 50:
 '#include <Polar Graphs> version >= 3.0\n'
+<BLANKLINE>
+filesystem:
+{'root': {':variables': [<VariablesRecord ...>],
+          ':waves': [<WaveRecord ...>,
+                     <WaveRecord ...>,
+                     <WaveRecord ...>,
+                     <WaveRecord ...>,
+                     <WaveRecord ...>,
+                     <WaveRecord ...>,
+                     <WaveRecord ...>,
+                     <WaveRecord ...>],
+          'Packages': {'PolarGraphs': {':variables': [<VariablesRecord ...>]},
+                       'WMDataBase': {':variables': [<VariablesRecord ...>]}}}}
 """
 
 import os.path
@@ -1335,6 +1348,7 @@ import sys
 from igor.binarywave import load as loadibw
 from igor.packed import load as loadpxp
 from igor.record.base import TextRecord
+from igor.record.folder import FolderStartRecord, FolderEndRecord
 from igor.record.variables import VariablesRecord
 from igor.record.wave import WaveRecord
 
@@ -1353,10 +1367,12 @@ def dumpibw(filename, strict=True):
 def dumppxp(filename, strict=True):
     sys.stderr.write('Testing {}\n'.format(filename))
     path = os.path.join(_data_dir, filename)
-    records = loadpxp(path, strict=strict)
+    records,filesystem = loadpxp(path, strict=strict)
     for i,record in enumerate(records):
         print('record {}:'.format(i))
-        if isinstance(record, TextRecord):
+        if isinstance(record, (FolderStartRecord, FolderEndRecord)):
+            pprint(record.null_terminated_text)
+        elif isinstance(record, TextRecord):
             pprint(record.text)
         elif isinstance(record, VariablesRecord):
             pprint(record.variables)
@@ -1364,6 +1380,8 @@ def dumppxp(filename, strict=True):
             pprint(record.wave)
         else:
             pprint(record)
+    print('\nfilesystem:')
+    pprint(filesystem)
 
 def pprint(data):
     lines = pformat(data).splitlines()
