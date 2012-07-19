@@ -117,13 +117,17 @@ def load(filename, strict=True, ignore_unknown=True):
             dir_stack.pop()
         elif isinstance(record, (_VariablesRecord, _WaveRecord)):
             if isinstance(record, _VariablesRecord):
-                filename = ':variables'  # start with an invalid character
-            else:                        # to avoid collisions with folder
-                filename = ':waves'      # names
-            if filename in cwd:
-                cwd[filename].append(record)
+                # start with an invalid character to avoid collisions
+                # with folder names
+                filename = ':variables'
             else:
-                cwd[filename] = [record]
+                filename = ''.join(c for c in record.wave_info['bname']
+                                   ).split('\x00', 1)[0]
+            if filename in cwd:
+                raise ValueError('collision on name {} in {}'.format(
+                        filename, ':'.join(d for d,cwd in dir_stack)))
+            else:
+                cwd[filename] = record
 
     return (records, filesystem)
 

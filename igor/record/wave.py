@@ -9,7 +9,8 @@ from . import Record
 class WaveRecord (Record):
     def __init__(self, *args, **kwargs):
         super(WaveRecord, self).__init__(*args, **kwargs)
-        self.wave = _loadibw(_BytesIO(bytes(self.data)), strict=False)
+        self.wave,self.bin_info,self.wave_info = _loadibw(
+            _BytesIO(bytes(self.data)), strict=False)
 
     def __str__(self):
         return str(self.wave)
