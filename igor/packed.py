@@ -71,6 +71,11 @@ def load(filename, strict=True, ignore_unknown=True):
         if not hasattr(filename, 'read'):
             f.close()
 
+    filesystem = _build_filesystem(records)
+
+    return (records, filesystem)
+
+def _build_filesystem(records):
     # From PTN003:
     """The name must be a valid Igor data folder name. See Object
     Names in the Igor Reference help file for name rules.
@@ -117,17 +122,40 @@ def load(filename, strict=True, ignore_unknown=True):
             dir_stack.pop()
         elif isinstance(record, (_VariablesRecord, _WaveRecord)):
             if isinstance(record, _VariablesRecord):
+                _add_variables(dir_stack, cwd, record)
                 # start with an invalid character to avoid collisions
                 # with folder names
-                filename = ':variables'
-            else:
+                #filename = ':variables'
+                #_check_filename(dir_stack, filename)
+                #cwd[filename] = record
+            else:  # WaveRecord
                 filename = ''.join(c for c in record.wave_info['bname']
                                    ).split('\x00', 1)[0]
-            if filename in cwd:
-                raise ValueError('collision on name {} in {}'.format(
-                        filename, ':'.join(d for d,cwd in dir_stack)))
-            else:
+                _check_filename(dir_stack, filename)
                 cwd[filename] = record
+    return filesystem
 
-    return (records, filesystem)
+def _check_filename(dir_stack, filename):
+    cwd = dir_stack[-1][-1]
+    if filename in cwd:
+        raise ValueError('collision on name {} in {}'.format(
+                filename, ':'.join(d for d,cwd in dir_stack)))
 
+def _add_variables(dir_stack, cwd, record):
+    if len(dir_stack) == 1:
+        # From PTN003:
+        """When reading a packed file, any system variables
+        encountered while the current data folder is not the root
+        should be ignored.
+        """
+        for i,value in enumerate(record.variables['sysVars']):
+            name = 'K{}'.format(i)
+            _check_filename(dir_stack, name)
+            cwd[name] = value
+    for name,value in (
+        record.variables['userVars'].items() +
+        record.variables['userStrs'].items()):
+        _check_filename(dir_stack, name)
+        cwd[name] = value
+    if record.variables['header']['version'] == 2:
+        raise NotImplementedError('add dependent variables to filesystem')
