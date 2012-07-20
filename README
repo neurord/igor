@@ -86,6 +86,10 @@ Run internal unit tests with::
 
     $ nosetests --with-doctest --doctest-tests igor test
 
+The data in the ``test/data`` directory is in the Git repository, but
+it is not bundled with the source code.  If you want the test data,
+you'll have to clone the Git repository or download a snapshot.
+
 Licence
 =======
 
