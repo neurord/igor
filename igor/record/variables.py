@@ -1,34 +1,135 @@
 # Copyright
 
+import io as _io
+
+from .. import LOG as _LOG
 from ..binarywave import TYPE_TABLE as _TYPE_TABLE
+from ..binarywave import NullStaticStringField as _NullStaticStringField
+from ..binarywave import DynamicStringField as _DynamicStringField
 from ..struct import Structure as _Structure
+from ..struct import DynamicStructure as _DynamicStructure
 from ..struct import Field as _Field
+from ..struct import DynamicField as _DynamicField
 from ..util import byte_order as _byte_order
 from ..util import need_to_reorder_bytes as _need_to_reorder_bytes
 from .base import Record
 
 
-VarHeaderCommon = _Structure(
-    name='VarHeaderCommon',
-    fields=[
-        _Field('h', 'version', help='Version number for this header.'),
-        ])
+class ListedStaticStringField (_NullStaticStringField):
+    """Handle string conversions for multi-count dynamic parents.
+
+    If a field belongs to a multi-count dynamic parent, the parent is
+    called multiple times to parse each count, and the field's
+    post-unpack hook gets called after the field is unpacked during
+    each iteration.  This requires alternative logic for getting and
+    setting the string data.  The actual string formatting code is not
+    affected.
+    """
+    def post_unpack(self, parents, data):
+        parent_structure = parents[-1]
+        parent_data = self._get_structure_data(parents, data, parent_structure)
+        d = self._normalize_string(parent_data[-1][self.name])
+        parent_data[-1][self.name] = d
+
+
+class ListedStaticStringField (_NullStaticStringField):
+    """Handle string conversions for multi-count dynamic parents.
+
+    If a field belongs to a multi-count dynamic parent, the parent is
+    called multiple times to parse each count, and the field's
+    post-unpack hook gets called after the field is unpacked during
+    each iteration.  This requires alternative logic for getting and
+    setting the string data.  The actual string formatting code is not
+    affected.
+    """
+    def post_unpack(self, parents, data):
+        parent_structure = parents[-1]
+        parent_data = self._get_structure_data(parents, data, parent_structure)
+        d = self._normalize_string(parent_data[-1][self.name])
+        parent_data[-1][self.name] = d
+
+
+class ListedDynamicStrDataField (_DynamicStringField, ListedStaticStringField):
+    _size_field = 'strLen'
+    _null_terminated = False
+
+    def _get_size_data(self, parents, data):
+        parent_structure = parents[-1]
+        parent_data = self._get_structure_data(parents, data, parent_structure)
+        return parent_data[-1][self._size_field]
+
+
+class DynamicVarDataField (_DynamicField):
+    def pre_pack(self, parents, data):
+        raise NotImplementedError()
+
+    def post_unpack(self, parents, data):
+        var_structure = parents[-1]
+        var_data = self._get_structure_data(parents, data, var_structure)
+        data = var_data[self.name]
+        d = {}
+        for i,value in enumerate(data):
+            key,value = self._normalize_item(i, value)
+            d[key] = value
+        var_data[self.name] = d
+
+    def _normalize_item(self, index, value):
+        raise NotImplementedError()
+
+
+class DynamicSysVarField (DynamicVarDataField):
+    def _normalize_item(self, index, value):
+        name = 'K{}'.format(index)
+        return (name, value)
+
+
+class DynamicUserVarField (DynamicVarDataField):
+    def _normalize_item(self, index, value):
+        name = value['name']
+        value = value['num']
+        return (name, value)
+
+
+class DynamicUserStrField (DynamicVarDataField):
+    def _normalize_item(self, index, value):
+        name = value['name']
+        value = value['data']
+        return (name, value)
+
+
+class DynamicVarNumField (_DynamicField):
+    def post_unpack(self, parents, data):
+        parent_structure = parents[-1]
+        parent_data = self._get_structure_data(parents, data, parent_structure)
+        d = self._normalize_numeric_variable(parent_data[-1][self.name])
+        parent_data[-1][self.name] = d
+
+    def _normalize_numeric_variable(self, num_var):
+        t = _TYPE_TABLE[num_var['numType']]
+        if num_var['numType'] % 2:  # complex number
+            return t(complex(num_var['realPart'], num_var['imagPart']))
+        else:
+            return t(num_var['realPart'])
+
+
+class DynamicFormulaField (_DynamicStringField):
+    _size_field = 'formulaLen'
+    _null_terminated = True
+
 
 # From Variables.h
-VarHeader1 = _Structure(
+VarHeader1 = _Structure(  # `version` field pulled out into VariablesRecord
     name='VarHeader1',
     fields=[
-        _Field('h', 'version', help='Version number is 1 for this header.'),
         _Field('h', 'numSysVars', help='Number of system variables (K0, K1, ...).'),
         _Field('h', 'numUserVars', help='Number of user numeric variables -- may be zero.'),
         _Field('h', 'numUserStrs', help='Number of user string variables -- may be zero.'),
         ])
 
 # From Variables.h
-VarHeader2 = _Structure(
+VarHeader2 = _Structure(  # `version` field pulled out into VariablesRecord
     name='VarHeader2',
     fields=[
-        _Field('h', 'version', help='Version number is 2 for this header.'),
         _Field('h', 'numSysVars', help='Number of system variables (K0, K1, ...).'),
         _Field('h', 'numUserVars', help='Number of user numeric variables -- may be zero.'),
         _Field('h', 'numUserStrs', help='Number of user string variables -- may be zero.'),
@@ -37,19 +138,19 @@ VarHeader2 = _Structure(
         ])
 
 # From Variables.h
-UserStrVarRec1 = _Structure(
+UserStrVarRec1 = _DynamicStructure(
     name='UserStrVarRec1',
     fields=[
-        _Field('c', 'name', help='Name of the string variable.', count=32),
+        ListedStaticStringField('c', 'name', help='Name of the string variable.', count=32),
         _Field('h', 'strLen', help='The real size of the following array.'),
-        _Field('c', 'data'),
+        ListedDynamicStrDataField('c', 'data'),
         ])
 
 # From Variables.h
-UserStrVarRec2 = _Structure(
+UserStrVarRec2 = _DynamicStructure(
     name='UserStrVarRec2',
     fields=[
-        _Field('c', 'name', help='Name of the string variable.', count=32),
+        ListedStaticStringField('c', 'name', help='Name of the string variable.', count=32),
         _Field('l', 'strLen', help='The real size of the following array.'),
         _Field('c', 'data'),
         ])
@@ -65,23 +166,120 @@ VarNumRec = _Structure(
         ])
 
 # From Variables.h
-UserNumVarRec = _Structure(
+UserNumVarRec = _DynamicStructure(
     name='UserNumVarRec',
     fields=[
-        _Field('c', 'name', help='Name of the string variable.', count=32),
+        ListedStaticStringField('c', 'name', help='Name of the string variable.', count=32),
         _Field('h', 'type', help='0 = string, 1 = numeric.'),
-        _Field(VarNumRec, 'num', help='Type and value of the variable if it is numeric.  Not used for string.'),
+        DynamicVarNumField(VarNumRec, 'num', help='Type and value of the variable if it is numeric.  Not used for string.'),
         ])
 
 # From Variables.h
-UserDependentVarRec = _Structure(
+UserDependentVarRec = _DynamicStructure(
     name='UserDependentVarRec',
     fields=[
-        _Field('c', 'name', help='Name of the string variable.', count=32),
+        ListedStaticStringField('c', 'name', help='Name of the string variable.', count=32),
         _Field('h', 'type', help='0 = string, 1 = numeric.'),
         _Field(VarNumRec, 'num', help='Type and value of the variable if it is numeric.  Not used for string.'),
         _Field('h', 'formulaLen', help='The length of the dependency formula.'),
-        _Field('c', 'formula', help='Start of the dependency formula. A C string including null terminator.'),
+        DynamicFormulaField('c', 'formula', help='Start of the dependency formula. A C string including null terminator.'),
+        ])
+
+
+class DynamicVarHeaderField (_DynamicField):
+    def pre_pack(self, parents, data):
+        raise NotImplementedError()
+
+    def post_unpack(self, parents, data):
+        var_structure = parents[-1]
+        var_data = self._get_structure_data(
+            parents, data, var_structure)
+        var_header_structure = self.format
+        data = var_data['var_header']
+        sys_vars_field = var_structure.get_field('sysVars')
+        sys_vars_field.count = data['numSysVars']
+        sys_vars_field.setup()
+        user_vars_field = var_structure.get_field('userVars')
+        user_vars_field.count = data['numUserVars']
+        user_vars_field.setup()
+        user_strs_field = var_structure.get_field('userStrs')
+        user_strs_field.count = data['numUserStrs']
+        user_strs_field.setup()
+        if 'numDependentVars' in data:
+            dependent_vars_field = var_structure.get_field('dependentVars')
+            dependent_vars_field.count = data['numDependentVars']
+            dependent_vars_field.setup()
+            dependent_strs_field = var_structure.get_field('dependentStrs')
+            dependent_strs_field.count = data['numDependentStrs']
+            dependent_strs_field.setup()
+        var_structure.setup()
+
+
+Variables1 = _DynamicStructure(
+    name='Variables1',
+    fields=[
+        DynamicVarHeaderField(VarHeader1, 'var_header', help='Variables header'),
+        DynamicSysVarField('f', 'sysVars', help='System variables', count=0),
+        DynamicUserVarField(UserNumVarRec, 'userVars', help='User numeric variables', count=0),
+        DynamicUserStrField(UserStrVarRec1, 'userStrs', help='User string variables', count=0),
+        ])
+
+
+Variables2 = _DynamicStructure(
+    name='Variables2',
+    fields=[
+        DynamicVarHeaderField(VarHeader2, 'var_header', help='Variables header'),
+        DynamicSysVarField('f', 'sysVars', help='System variables', count=0),
+        DynamicUserVarField(UserNumVarRec, 'userVars', help='User numeric variables', count=0),
+        DynamicUserStrField(UserStrVarRec2, 'userStrs', help='User string variables', count=0),
+        _Field(UserDependentVarRec, 'dependentVars', help='Dependent numeric variables.', count=0),
+        _Field(UserDependentVarRec, 'dependentStrs', help='Dependent string variables.', count=0),
+        ])
+
+
+class DynamicVersionField (_DynamicField):
+    def pre_pack(self, parents, byte_order):
+        raise NotImplementedError()
+
+    def post_unpack(self, parents, data):
+        variables_structure = parents[-1]
+        variables_data = self._get_structure_data(
+            parents, data, variables_structure)
+        version = variables_data['version']
+        if variables_structure.byte_order in '@=':
+            need_to_reorder_bytes = _need_to_reorder_bytes(version)
+            variables_structure.byte_order = _byte_order(need_to_reorder_bytes)
+            _LOG.debug(
+                'get byte order from version: {} (reorder? {})'.format(
+                    variables_structure.byte_order, need_to_reorder_bytes))
+        else:
+            need_to_reorder_bytes = False
+
+        old_format = variables_structure.fields[-1].format
+        if version == 1:
+            variables_structure.fields[-1].format = Variables1
+        elif version == 2:
+            variables_structure.fields[-1].format = Variables2
+        elif not need_to_reorder_bytes:
+            raise ValueError(
+                'invalid variables record version: {}'.format(version))
+
+        if variables_structure.fields[-1].format != old_format:
+            _LOG.debug('change variables record from {} to {}'.format(
+                    old_format, variables_structure.fields[-1].format))
+            variables_structure.setup()
+        elif need_to_reorder_bytes:
+            variables_structure.setup()
+
+        # we might need to unpack again with the new byte order
+        return need_to_reorder_bytes
+
+
+VariablesRecordStructure = _DynamicStructure(
+    name='VariablesRecord',
+    fields=[
+        DynamicVersionField('h', 'version', help='Version number for this header.'),
+        _Field(Variables1, 'variables', help='The rest of the variables data.'),
         ])
 
 
@@ -89,122 +287,13 @@ class VariablesRecord (Record):
     def __init__(self, *args, **kwargs):
         super(VariablesRecord, self).__init__(*args, **kwargs)
         # self.header['version']  # record version always 0?
-        version = self._set_byte_order_and_get_version()
-        self.structure = self._get_structure(version)
-        self.variables = self.structure.unpack_from(self.data)
-        self.variables.update(self._unpack_variable_length_structures(version))
-        self._normalize_variables()
-
-    def _set_byte_order_and_get_version(self):
-        if self.byte_order:
-            VarHeaderCommon.set_byte_order(self.byte_order)
-        else:
-            VarHeaderCommon.set_byte_order('=')            
-        version = VarHeaderCommon.unpack_from(self.data)['version']
-        if not self.byte_order:
-            need_to_reorder = _need_to_reorder_bytes(version)
-            self.byte_order = _byte_order(need_to_reorder)
-            if need_to_reorder:
-                VarHeaderCommon.set_byte_order(self.byte_order)
-                version = VarHeaderCommon.unpack_from(self.data)['version']
-        return version
-
-    def _get_structure(self, version):
-        if version == 1:
-            header_struct = VarHeader1
-        elif version == 2:
-            header_struct = VarHeader2
-        else:
-            raise NotImplementedError(
-                'Variables record version {}'.format(version))
-        header = header_struct.unpack_from(self.data)
-        fields = [
-            _Field(header_struct, 'header', help='VarHeader'),
-            _Field('f', 'sysVars', help='system variables',
-                   count=header['numSysVars']),
-            _Field(UserNumVarRec, 'userVars', help='user variables',
-                   count=header['numUserVars']),
-            ]
-        return _Structure(name='variables', fields=fields)
-
-    def _unpack_variable_length_structures(self, version):
-        data = {'userStrs': []}
-        offset = self.structure.size
-
-        if version == 1:
-            user_str_var_struct = UserStrVarRec1
-        elif version == 2:
-            user_str_var_struct = UserStrVarRec2
-        else:
-            raise NotImplementedError(
-                'Variables record version {}'.format(version))
-        user_str_var_struct.set_byte_order(self.byte_order)
-        for i in range(self.variables['header']['numUserStrs']):
-            d = user_str_var_struct.unpack_from(self.data, offset)
-            offset += user_str_var_struct.size
-            end = offset + d['strLen'] - 1  # one character already in struct
-            if d['strLen']:
-                d['data'] = d['data'] + self.data[offset:end]
-            else:
-                d['data'] = ''
-            offset = end
-            data['userStrs'].append(d)
-
-        if version == 2:
-            data.update({'dependentVars': [], 'dependentStrs': []})
-            UserDependentVarRec.set_byte_order(self.byte_order)
-            for i in range(self.variables['header']['numDependentVars']):
-                d,offset = self._unpack_dependent_variable(offset)
-                data['dependentVars'].append(d)
-            for i in range(self.variables['header']['numDependentStrs']):
-                d,offset = self._unpack_dependent_variable(offset)
-                data['dependentStrs'].append(d)
-
-        if offset != len(self.data):
-            raise ValueError('too much data ({} extra bytes)'.format(
-                    len(self.data)-offset))
-        return data
-
-    def _unpack_dependent_variable(self, offset):
-        d = UserDependentVarRec.unpack_from(self.data, offset)
-        offset += UserDependentVarRec.size
-        end = offset + d['formulaLen'] - 1  # one character already in struct
-        if d['formulaLen']:
-            d['formula'] = d['formula'] + self.data[offset:end]
-        else:
-            d['formula'] = ''
-        offset = end
-        return (d, offset)
-
-    def _normalize_variables(self):
-        user_vars = {}
-        for num_var in self.variables['userVars']:
-            key,value = self._normalize_user_numeric_variable(num_var)
-            user_vars[key] = value
-        self.variables['userVars'] = user_vars
-        user_strs = {}
-        for str_var in self.variables['userStrs']:
-            name = self._normalize_null_terminated_string(str_var['name'])
-            user_strs[name] = str_var['data']
-        if self.variables['header']['version'] == 2:
-            raise NotImplementedError('normalize dependent variables')
-        self.variables['userStrs'] = user_strs
-
-    def _normalize_null_terminated_string(self, string):
-        return string.tostring().split('\x00', 1)[0]
-
-    def _normalize_user_numeric_variable(self, user_num_var):
-        user_num_var['name'] = self._normalize_null_terminated_string(
-            user_num_var['name'])
-        if user_num_var['type']:  # numeric
-            value = self._normalize_numeric_variable(user_num_var['num'])
-        else:  # string
-            value = None
-        return (user_num_var['name'], value)
-
-    def _normalize_numeric_variable(self, num_var):
-        t = _TYPE_TABLE[num_var['numType']]
-        if num_var['numType'] % 2:  # complex number
-            return t(complex(num_var['realPart'], num_var['imagPart']))
-        else:
-            return t(num_var['realPart'])
+        VariablesRecordStructure.byte_order = '='
+        VariablesRecordStructure.setup()
+        stream = _io.BytesIO(bytes(self.data))
+        self.variables = VariablesRecordStructure.unpack_stream(stream)
+        self.namespace = {}
+        for key,value in self.variables['variables'].items():
+            if key not in ['var_header']:
+                _LOG.debug('update namespace {} with {} for {}'.format(
+                        self.namespace, value, key))
+                self.namespace.update(value)

@@ -2,6 +2,7 @@
 
 "Read IGOR Packed Experiment files files into records."
 
+from . import LOG as _LOG
 from .struct import Structure as _Structure
 from .struct import Field as _Field
 from .util import byte_order as _byte_order
@@ -39,6 +40,7 @@ SUPERCEDED_MASK = 0x8000  # Bit is set if the record is superceded by
 
 
 def load(filename, strict=True, ignore_unknown=True):
+    _LOG.debug('loading a packed experiment file from {}'.format(filename))
     records = []
     if hasattr(filename, 'read'):
         f = filename  # filename is actually a stream object
@@ -48,26 +50,38 @@ def load(filename, strict=True, ignore_unknown=True):
     initial_byte_order = '='
     try:
         while True:
+            PackedFileRecordHeader.byte_order = initial_byte_order
+            PackedFileRecordHeader.setup()
             b = buffer(f.read(PackedFileRecordHeader.size))
             if not b:
                 break
-            PackedFileRecordHeader.set_byte_order(initial_byte_order)
+            _LOG.debug('reading a new packed experiment file record')
             header = PackedFileRecordHeader.unpack_from(b)
             if header['version'] and not byte_order:
                 need_to_reorder = _need_to_reorder_bytes(header['version'])
                 byte_order = initial_byte_order = _byte_order(need_to_reorder)
+                _LOG.debug(
+                    'get byte order from version: {} (reorder? {})'.format(
+                        byte_order, need_to_reorder))
                 if need_to_reorder:
-                    PackedFileRecordHeader.set_byte_order(byte_order)
+                    PackedFileRecordHeader.byte_order = byte_order
+                    PackedFileRecordHeader.setup()
                     header = PackedFileRecordHeader.unpack_from(b)
+                    _LOG.debug(
+                        'reordered version: {}'.format(header['version']))
             data = buffer(f.read(header['numDataBytes']))
             record_type = _RECORD_TYPE.get(
                 header['recordType'] & PACKEDRECTYPE_MASK, _UnknownRecord)
+            _LOG.debug('the new record has type {} ({}).'.format(
+                    record_type, header['recordType']))
             if record_type in [_UnknownRecord, _UnusedRecord
                                ] and not ignore_unknown:
                 raise KeyError('unkown record type {}'.format(
                         header['recordType']))
             records.append(record_type(header, data, byte_order=byte_order))
     finally:
+        _LOG.debug('finished loading {} records from {}'.format(
+                len(records), filename))
         if not hasattr(filename, 'read'):
             f.close()
 
@@ -122,15 +136,19 @@ def _build_filesystem(records):
             dir_stack.pop()
         elif isinstance(record, (_VariablesRecord, _WaveRecord)):
             if isinstance(record, _VariablesRecord):
-                _add_variables(dir_stack, cwd, record)
-                # start with an invalid character to avoid collisions
-                # with folder names
-                #filename = ':variables'
-                #_check_filename(dir_stack, filename)
-                #cwd[filename] = record
+                sys_vars = record.variables['variables']['sysVars'].keys()
+                for filename,value in record.namespace.items():
+                    if len(dir_stack) > 1 and filename in sys_vars:
+                        # From PTN003:
+                        """When reading a packed file, any system
+                        variables encountered while the current data
+                        folder is not the root should be ignored.
+                        """
+                        continue
+                    _check_filename(dir_stack, filename)
+                    cwd[filename] = value
             else:  # WaveRecord
-                filename = ''.join(c for c in record.wave_info['bname']
-                                   ).split('\x00', 1)[0]
+                filename = record.wave['wave']['wave_header']['bname']
                 _check_filename(dir_stack, filename)
                 cwd[filename] = record
     return filesystem
@@ -140,22 +158,3 @@ def _check_filename(dir_stack, filename):
     if filename in cwd:
         raise ValueError('collision on name {} in {}'.format(
                 filename, ':'.join(d for d,cwd in dir_stack)))
-
-def _add_variables(dir_stack, cwd, record):
-    if len(dir_stack) == 1:
-        # From PTN003:
-        """When reading a packed file, any system variables
-        encountered while the current data folder is not the root
-        should be ignored.
-        """
-        for i,value in enumerate(record.variables['sysVars']):
-            name = 'K{}'.format(i)
-            _check_filename(dir_stack, name)
-            cwd[name] = value
-    for name,value in (
-        record.variables['userVars'].items() +
-        record.variables['userStrs'].items()):
-        _check_filename(dir_stack, name)
-        cwd[name] = value
-    if record.variables['header']['version'] == 2:
-        raise NotImplementedError('add dependent variables to filesystem')
