@@ -1,6 +1,5 @@
 # This program is in the public domain
-"""
-IGOR file reader.
+"""`igor.py` compatibility layer on top of the `igor` package.
 
 igor.load('filename') or igor.loads('data') loads the content of an igore file
 into memory as a folder structure.
@@ -14,7 +13,9 @@ To see the whole tree, use: print folder.format()
 The usual igor folder types are given in the technical reports
 PTN003.ifn and TN003.ifn.
 """
-__version__="0.9"
+from __future__ import absolute_import
+
+__version__='1.0'
 
 import struct
 import numpy
