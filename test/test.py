@@ -1419,8 +1419,8 @@ filesystem:
 
 import os.path
 from pprint import pformat
-import sys
 
+from igor import LOG
 from igor.binarywave import load as loadibw
 from igor.packed import load as loadpxp
 from igor.record.base import TextRecord
@@ -1433,13 +1433,13 @@ _this_dir = os.path.dirname(__file__)
 _data_dir = os.path.join(_this_dir, 'data')
 
 def dumpibw(filename):
-    sys.stderr.write('Testing {}\n'.format(filename))
+    LOG.info('Testing {}\n'.format(filename))
     path = os.path.join(_data_dir, filename)
     data = loadibw(path)
     pprint(data)
 
 def dumppxp(filename):
-    sys.stderr.write('Testing {}\n'.format(filename))
+    LOG.info('Testing {}\n'.format(filename))
     path = os.path.join(_data_dir, filename)
     records,filesystem = loadpxp(path)
     for i,record in enumerate(records):
