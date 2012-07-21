@@ -709,7 +709,7 @@ class DynamicStructure (Structure):
         if data is None:
             parents = [self]
             data = d = {}
-            if _LOG.level == _logging.DEBUG:
+            if _LOG.level <= _logging.DEBUG:
                 stream = DebuggingStream(stream)
         else:
             parents = parents + [self]
