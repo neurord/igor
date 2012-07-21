@@ -717,7 +717,8 @@ class DynamicStructure (Structure):
         for f in self.fields:
             _LOG.debug('parsing {!r}.{} (count={}, item_count={})'.format(
                     self, f, f.count, f.item_count))
-            _LOG.debug('data:\n{}'.format(_pprint.pformat(data)))
+            if _LOG.level <= _logging.DEBUG:
+                _LOG.debug('data:\n{}'.format(_pprint.pformat(data)))
             if hasattr(f, 'pre_unpack'):
                 _LOG.debug('pre-unpack {}'.format(f))
                 f.pre_unpack(parents=parents, data=data)
