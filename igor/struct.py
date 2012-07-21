@@ -252,11 +252,11 @@ class Field (object):
         _LOG.debug('unpack {} for {} {}'.format(data, self, self.format))
         iterator = iter(data)
         try:
-            items = [iterator.next() for i in range(self.arg_count)]
+            items = [next(iterator) for i in range(self.arg_count)]
         except StopIteration:
             raise ValueError('not enough data to unpack {}'.format(self))
         try:
-            iterator.next()
+            next(iterator)
         except StopIteration:
             pass
         else:
@@ -549,13 +549,13 @@ class Structure (_struct.Struct):
         iterator = iter(args)
         for f in self.fields:
             try:
-                items = [iterator.next() for i in range(f.arg_count)]
+                items = [next(iterator) for i in range(f.arg_count)]
             except StopIteration:
                 raise ValueError('not enough data to unpack {}.{}'.format(
                         self, f))
             data[f.name] = f.unpack_data(items)
         try:
-            iterator.next()
+            next(iterator)
         except StopIteration:
             pass
         else:
@@ -671,7 +671,7 @@ class DynamicStructure (Structure):
     ...         ],
     ...     byte_order='>')
 
-    >>> b = '\x00\x00\x00\x02\x01\x02\x03\x04'
+    >>> b = b'\x00\x00\x00\x02\x01\x02\x03\x04'
     >>> d = dynamic_length_vector.unpack(b)
     >>> pprint(d)
     {'data': array([258, 772]), 'length': 2}
