@@ -70,10 +70,14 @@ class StaticStringField (_DynamicField):
         wave_data[self.name] = d
 
     def _normalize_string(self, d):
-        if hasattr(d, 'tostring'):
+        if isinstance(d, bytes):
+            pass
+        elif hasattr(d, 'tobytes'):
+            d = d.tobytes()
+        elif hasattr(d, 'tostring'):  # Python 2 compatibility
             d = d.tostring()
         else:
-            d = ''.join(d)
+            d = b''.join(d)
         if self._array_size_field:
             start = 0
             strings = []
@@ -449,7 +453,7 @@ class DynamicLabelsField (DynamicStringField):
         wave_structure = parents[-1]
         wave_data = self._get_structure_data(parents, data, wave_structure)
         bin_header = wave_data['bin_header']
-        d = ''.join(wave_data[self.name])
+        d = b''.join(wave_data[self.name])
         dim_labels = []
         start = 0
         for size in bin_header[self._size_field]:
@@ -457,7 +461,7 @@ class DynamicLabelsField (DynamicStringField):
             if end > start:
                 dim_data = d[start:end]
                 # split null-delimited strings
-                labels = dim_data.split(chr(0))
+                labels = dim_data.split(b'\x00')
                 start = end
             else:
                 labels = []
@@ -494,10 +498,10 @@ class DynamicStringIndicesDataField (_DynamicField):
         for i,offset in enumerate(wave_data['sIndices']):
             if offset > start:
                 chars = wdata[start:offset]
-                strings.append(''.join(chars))
+                strings.append(b''.join(chars))
                 start = offset
             elif offset == start:
-                strings.append('')
+                strings.append(b'')
             else:
                 raise ValueError((offset, wave_data['sIndices']))
         wdata = _numpy.array(strings)

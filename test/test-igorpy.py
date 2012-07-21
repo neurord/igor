@@ -4,6 +4,7 @@ r"""Test the igor.igorpy compatibility layer by loading sample files.
 
 >>> from pprint import pprint
 >>> import igor.igorpy as igor
+>>> igor.ENCODING = 'UTF-8'
 
 Load a packed experiment:
 
@@ -74,9 +75,9 @@ Waves:
         ...
         0.00077303,  0.00038651,  0.        ]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]
 >>> d.W_plrX5.data_units
-('', '', '', '')
+(u'', '', '', '')
 >>> d.W_plrX5.axis_units
-('', '', '', '')
+(u'', '', '', '')
 >>> d.W_plrX5.data  # doctest: +ELLIPSIS
 array([  1.83690956e-17,   2.69450769e-02,   7.65399113e-02,
          1.44305170e-01,   2.23293692e-01,   3.04783821e-01,

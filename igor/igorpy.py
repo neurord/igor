@@ -15,6 +15,7 @@ PTN003.ifn and TN003.ifn.
 """
 from __future__ import absolute_import
 import io as _io
+import locale as _locale
 import re as _re
 import sys as _sys
 
@@ -37,6 +38,7 @@ from .record.variables import VariablesRecord as _VariablesRecord
 __version__='0.10'
 
 
+ENCODING = _locale.getpreferredencoding() or _sys.getdefaultencoding()
 PYKEYWORDS = set(('and','as','assert','break','class','continue',
                   'def','elif','else','except','exec','finally',
                   'for','global','if','import','in','is','lambda',
@@ -84,7 +86,7 @@ class Wave(IgorObject):
     """
     def __init__(self, record):
         d = record.wave['wave']
-        self.name = d['wave_header']['bname']
+        self.name = d['wave_header']['bname'].decode(ENCODING)
         self.data = d['wData']
         self.fs = d['wave_header']['fsValid']
         self.fstop = d['wave_header']['topFullScale']
@@ -100,8 +102,8 @@ class Wave(IgorObject):
             sfA = d['wave_header']['sfA']
             sfB = d['wave_header']['sfB']
             # TODO find example with multiple data units
-            self.data_units = [d['data_units']]
-            self.axis_units = [d['dimension_units']]
+            self.data_units = [d['data_units'].decode(ENCODING)]
+            self.axis_units = [d['dimension_units'].decode(ENCODING)]
         self.data_units.extend(['']*(_MAXDIMS-len(self.data_units)))
         self.data_units = tuple(self.data_units)
         self.axis_units.extend(['']*(_MAXDIMS-len(self.axis_units)))
@@ -257,7 +259,8 @@ def _convert(packed_experiment, ignore_unknown=True):
             r = None
 
         if isinstance(record, _FolderStartRecord):
-            path = stack[-1].path+[record.null_terminated_text]
+            path = stack[-1].path + [
+                record.null_terminated_text.decode(ENCODING)]
             folder = Folder(path)
             stack[-1].append(folder)
             stack.append(folder)

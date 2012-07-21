@@ -42,5 +42,6 @@ class UnusedRecord (Record):
 class TextRecord (Record):
     def __init__(self, *args, **kwargs):
         super(TextRecord, self).__init__(*args, **kwargs)
-        self.text = str(self.data).replace('\r\n', '\n').replace('\r', '\n')
-        self.null_terminated_text = self.text.split('\x00', 1)[0]
+        self.text = bytes(self.data).replace(
+            b'\r\n', b'\n').replace(b'\r', b'\n')
+        self.null_terminated_text = self.text.split(b'\x00', 1)[0]
