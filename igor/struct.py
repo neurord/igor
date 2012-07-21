@@ -373,12 +373,12 @@ class Structure (_struct.Struct):
         struct run {
           unsigned int time;
           short data[2][3];
-        }
+        };
 
         struct experiment {
           unsigned short version;
           struct run runs[2];
-        }
+        };
 
     As:
 
@@ -632,7 +632,7 @@ class DynamicStructure (Structure):
         struct vector {
           unsigned int length;
           short data[length];
-        }
+        };
 
     You can generate a Python version of this structure in two ways,
     with a dynamic ``length``, or with a dynamic ``data``.  In both
