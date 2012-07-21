@@ -75,6 +75,11 @@ class ListedDynamicStrDataField (_DynamicStringField, ListedStaticStringField):
 
 
 class DynamicVarDataField (_DynamicField):
+    def __init__(self, *args, **kwargs):
+        if 'array' not in kwargs:
+            kwargs['array'] = True
+        super(DynamicVarDataField, self).__init__(*args, **kwargs)
+
     def pre_pack(self, parents, data):
         raise NotImplementedError()
 
@@ -247,8 +252,8 @@ Variables2 = _DynamicStructure(
         DynamicSysVarField('f', 'sysVars', help='System variables', count=0),
         DynamicUserVarField(UserNumVarRec, 'userVars', help='User numeric variables', count=0),
         DynamicUserStrField(UserStrVarRec2, 'userStrs', help='User string variables', count=0),
-        _Field(UserDependentVarRec, 'dependentVars', help='Dependent numeric variables.', count=0),
-        _Field(UserDependentVarRec, 'dependentStrs', help='Dependent string variables.', count=0),
+        _Field(UserDependentVarRec, 'dependentVars', help='Dependent numeric variables.', count=0, array=True),
+        _Field(UserDependentVarRec, 'dependentStrs', help='Dependent string variables.', count=0, array=True),
         ])
 
 
