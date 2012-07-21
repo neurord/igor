@@ -193,7 +193,7 @@ class Field (object):
                 index = []
                 for j,c in enumerate(reversed(self.count)):
                     index.insert(0, i % c)
-                    i /= c
+                    i //= c
                 yield index
 
     def pack_data(self, data=None):
