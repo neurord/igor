@@ -77,7 +77,11 @@ class Script (object):
         figure = _matplotlib_pyplot.figure()
         axes = figure.add_subplot(1, 1, 1)
         axes.set_title(title)
-        axes.plot(wave['wave']['wData'], 'r.')
+        try:
+            axes.plot(wave['wave']['wData'], 'r.')
+        except ValueError as error:
+            _LOG.error('error plotting {}: {}'.format(title, error))
+            pass
         self._num_plots += 1
 
     def display_plots(self):
