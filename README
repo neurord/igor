@@ -101,21 +101,26 @@ Maintenance
 ===========
 
 Maintainer
-==========
+----------
 
 W. Trevor King
 wking@tremily.us
 Copyright 2008-2012
 
 Release procedure
-=================
+-----------------
 
 When a new version of the package is ready, increment __version__
-in igor.py and enter::
+in ``igor/__init__.py`` and run update-copyright_::
+
+    $ update-copyright.py
+
+to update the copyright blurbs.  Then run::
 
     $ python setup.py sdist upload
 
-This will place a new version on pypi.
+This will place a new version on PyPI.
+
 
 .. _layman: http://layman.sourceforge.net/
 .. _wtk overlay: http://blog.tremily.us/posts/Gentoo_overlay/
@@ -129,3 +134,4 @@ This will place a new version on pypi.
 .. _pip: http://pypi.python.org/pypi/pip
 .. _igor.py: http://pypi.python.org/pypi/igor.py
 .. _GNU General Public License Version 3: http://www.gnu.org/licenses/gpl.txt
+.. _update-copyright: http://blog.tremily.us/posts/update-copyright/
