@@ -118,7 +118,7 @@ class Wave(IgorObject):
     def __array__(self):
         return self.data
 
-    __repr__ = __str__ = lambda s: u"<igor.Wave %s>" % s.format()
+    __repr__ = __str__ = lambda s: "<igor.Wave %s>" % s.format()
 
 class Recreation(IgorObject):
     """
@@ -187,7 +187,7 @@ class Folder(IgorObject):
             raise KeyError("Folder %s does not exist"%key)
 
     def __str__(self):
-        return u"<igor.Folder %s>" % "/".join(self.path)
+        return "<igor.Folder %s>" % "/".join(self.path)
 
     __repr__ = __str__
 
@@ -207,9 +207,9 @@ class Folder(IgorObject):
             pass
 
     def format(self, indent=0):
-        parent = u" "*indent+self.name
+        parent = " "*indent+self.name
         children = [r.format(indent=indent+2) for r in self.children]
-        return u"\n".join([parent]+children)
+        return "\n".join([parent]+children)
 
 
 def loads(s, **kwargs):
@@ -231,7 +231,7 @@ def load(filename, **kwargs):
 
 def _convert(packed_experiment, ignore_unknown=True):
     records, filesystem = packed_experiment
-    stack = [Folder(path=[u'root'])]
+    stack = [Folder(path=['root'])]
     for record in records:
         if isinstance(record, _UnknownRecord):
             if ignore_unknown:
