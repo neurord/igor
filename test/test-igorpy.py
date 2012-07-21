@@ -73,6 +73,8 @@ Waves:
         0.04715481,  0.0467683 ,  0.04638178,  0.04599527,  0.04560875,
         ...
         0.00077303,  0.00038651,  0.        ]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]
+>>> d.W_plrX5.data_units
+('', '', '', '')
 >>> d.W_plrX5.axis_units
 ('', '', '', '')
 >>> d.W_plrX5.data  # doctest: +ELLIPSIS
