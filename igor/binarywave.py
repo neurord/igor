@@ -1,20 +1,19 @@
-# Copyright (C) 2010 W. Trevor King <wking@drexel.edu>
+# Copyright (C) 2010-2012 W. Trevor King <wking@tremily.us>
 #
-# This file is part of Hooke.
+# This file is part of igor.
 #
-# Hooke is free software: you can redistribute it and/or modify it
-# under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# igor is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
 #
-# Hooke is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
-# Public License for more details.
+# igor is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+# details.
 #
-# You should have received a copy of the GNU Lesser General Public
-# License along with Hooke.  If not, see
-# <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with igor.  If not, see <http://www.gnu.org/licenses/>.
 
 "Read IGOR Binary Wave files into Numpy arrays."
 
