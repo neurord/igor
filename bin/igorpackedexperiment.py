@@ -23,25 +23,34 @@ import pprint
 
 import numpy
 
-from igor.packed import load
+from igor.packed import load, walk
+from igor.record.wave import WaveRecord
 from igor.script import Script
 
 
-def run(args):
-    records,filesystem = load(args.infile)
-    if hasattr(args.outfile, 'write'):
-        f = args.outfile  # filename is actually a stream object
-    else:
-        f = open(args.outfile, 'w')
-    try:
-        f.write(pprint.pformat(records))
-        f.write('\n')
-    finally:
-        if f != args.outfile:
-            f.close()
-    if args.verbose > 0:
-        pprint.pprint(filesystem)
+class PackedScript (Script):
+    def _run(self, args):
+        self.args = args
+        records,filesystem = load(args.infile)
+        if hasattr(args.outfile, 'write'):
+            f = args.outfile  # filename is actually a stream object
+        else:
+            f = open(args.outfile, 'w')
+        try:
+            f.write(pprint.pformat(records))
+            f.write('\n')
+        finally:
+            if f != args.outfile:
+                f.close()
+        if args.verbose > 0:
+            pprint.pprint(filesystem)
+        walk(filesystem, self._plot_wave_callback)
 
-s = Script(description=__doc__, filetype='IGOR Packed Experiment (.pxp) file')
-s._run = run
+    def _plot_wave_callback(self, dirpath, key, value):
+        if isinstance(value, WaveRecord):
+            self.plot_wave(self.args, value.wave, title=dirpath + [key])
+
+
+s = PackedScript(
+    description=__doc__, filetype='IGOR Packed Experiment (.pxp) file')
 s.run()

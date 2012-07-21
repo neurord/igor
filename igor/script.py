@@ -22,6 +22,12 @@ import argparse as _argparse
 import logging as _logging
 import sys as _sys
 
+try:
+    import matplotlib as _matplotlib
+    import matplotlib.pyplot as _matplotlib_pyplot
+except ImportError as _matplotlib_import_error:
+    _matplotlib = None
+
 from . import __version__
 from . import LOG as _LOG
 
@@ -39,8 +45,12 @@ class Script (object):
             '-o', '--outfile', metavar='FILE', default='-',
             help='file for ASCII output')
         self.parser.add_argument(
+            '-p', '--plot', action='store_const', const=True,
+            help='use Matplotlib to plot any IGOR waves')
+        self.parser.add_argument(
             '-V', '--verbose', action='count', default=0,
             help='increment verbosity')
+        self._num_plots = 0
 
     def run(self, *args, **kwargs):
         args = self.parser.parse_args(*args, **kwargs)
@@ -52,6 +62,24 @@ class Script (object):
             log_level = self.log_levels[min(args.verbose-1, len(self.log_levels)-1)]
             _LOG.setLevel(log_level)
         self._run(args)
+        self.display_plots()
 
     def _run(self, args):
         raise NotImplementedError()
+
+    def plot_wave(self, args, wave, title=None):
+        if not args.plot:
+            return  # no-op
+        if not _matplotlib:
+            raise _matplotlib_import_error
+        if title is None:
+            title = wave['wave']['wave_header']['bname']
+        figure = _matplotlib_pyplot.figure()
+        axes = figure.add_subplot(1, 1, 1)
+        axes.set_title(title)
+        axes.plot(wave['wave']['wData'], 'r.')
+        self._num_plots += 1
+
+    def display_plots(self):
+        if self._num_plots:
+            _matplotlib_pyplot.show()

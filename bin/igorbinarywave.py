@@ -27,13 +27,16 @@ from igor.binarywave import load
 from igor.script import Script
 
 
-def run(args):
-    wave = load(args.infile)
-    numpy.savetxt(args.outfile, wave['wave']['wData'], fmt='%g', delimiter='\t')
-    if args.verbose > 0:
-        wave['wave'].pop('wData')
-        pprint.pprint(wave)
+class WaveScript (Script):
+    def _run(self, args):
+        wave = load(args.infile)
+        numpy.savetxt(
+            args.outfile, wave['wave']['wData'], fmt='%g', delimiter='\t')
+        self.plot_wave(args, wave)
+        if args.verbose > 0:
+            wave['wave'].pop('wData')
+            pprint.pprint(wave)
 
-s = Script(description=__doc__)
-s._run = run
+
+s = WaveScript(description=__doc__)
 s.run()
