@@ -55,6 +55,10 @@ def load(filename, strict=True, ignore_unknown=True):
             b = buffer(f.read(PackedFileRecordHeader.size))
             if not b:
                 break
+            if len(b) < PackedFileRecordHeader.size:
+                raise ValueError(
+                    ('not enough data for the next record header ({} < {})'
+                     ).format(len(b), PackedFileRecordHeader.size))
             _LOG.debug('reading a new packed experiment file record')
             header = PackedFileRecordHeader.unpack_from(b)
             if header['version'] and not byte_order:
@@ -70,6 +74,10 @@ def load(filename, strict=True, ignore_unknown=True):
                     _LOG.debug(
                         'reordered version: {}'.format(header['version']))
             data = buffer(f.read(header['numDataBytes']))
+            if len(data) < header['numDataBytes']:
+                raise ValueError(
+                    ('not enough data for the next record ({} < {})'
+                     ).format(len(b), header['numDataBytes']))
             record_type = _RECORD_TYPE.get(
                 header['recordType'] & PACKEDRECTYPE_MASK, _UnknownRecord)
             _LOG.debug('the new record has type {} ({}).'.format(
