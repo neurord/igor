@@ -477,7 +477,7 @@ class DynamicStringIndicesDataField (_DynamicField):
         bin_header = wave_data['bin_header']
         wave_header = wave_data['wave_header']
         self.string_indices_size = bin_header['sIndicesSize']
-        self.count = self.string_indices_size / 4
+        self.count = self.string_indices_size // 4
         if self.count:  # make sure we're in a text wave
             assert TYPE_TABLE[wave_header['type']] is None, wave_header
         self.setup()
