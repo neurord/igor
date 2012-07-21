@@ -1415,6 +1415,21 @@ filesystem:
           'angleQ1': <WaveRecord ...>,
           'radiusData': <WaveRecord ...>,
           'radiusQ1': <WaveRecord ...>}}
+<BLANKLINE>
+walking filesystem:
+walk callback on ([], root, {'K0': 0.0,...})
+walk callback on (['root'], K0, 0.0)
+walk callback on (['root'], K1, 0.0)
+walk callback on (['root'], K10, 0.0)
+...
+walk callback on (['root'], K9, 0.0)
+walk callback on (['root'], Packages, {'PolarGraphs': ...})
+walk callback on (['root', 'Packages'], PolarGraphs, {...})
+walk callback on (['root', 'Packages', 'PolarGraphs'], V_bottom, 232.0)
+...
+walk callback on (['root', 'Packages'], WMDataBase, {...})
+...
+walk callback on (['root'], radiusQ1, <WaveRecord ...>)
 """
 
 import os.path
@@ -1423,6 +1438,7 @@ from pprint import pformat
 from igor import LOG
 from igor.binarywave import load as loadibw
 from igor.packed import load as loadpxp
+from igor.packed import walk as _walk
 from igor.record.base import TextRecord
 from igor.record.folder import FolderStartRecord, FolderEndRecord
 from igor.record.variables import VariablesRecord
@@ -1438,7 +1454,11 @@ def dumpibw(filename):
     data = loadibw(path)
     pprint(data)
 
-def dumppxp(filename):
+def walk_callback(dirpath, key, value):
+    print('walk callback on ({}, {}, {})'.format(
+            dirpath, key, pformat(value)))
+
+def dumppxp(filename, walk=True):
     LOG.info('Testing {}\n'.format(filename))
     path = os.path.join(_data_dir, filename)
     records,filesystem = loadpxp(path)
@@ -1456,6 +1476,9 @@ def dumppxp(filename):
             pprint(record)
     print('\nfilesystem:')
     pprint(filesystem)
+    if walk:
+        print('\nwalking filesystem:')
+        _walk(filesystem, walk_callback)
 
 def pprint(data):
     lines = pformat(data).splitlines()

@@ -22,6 +22,7 @@ from .struct import Structure as _Structure
 from .struct import Field as _Field
 from .util import byte_order as _byte_order
 from .util import need_to_reorder_bytes as _need_to_reorder_bytes
+from .util import _bytes
 from .record import RECORD_TYPE as _RECORD_TYPE
 from .record.base import UnknownRecord as _UnknownRecord
 from .record.base import UnusedRecord as _UnusedRecord
@@ -181,3 +182,13 @@ def _check_filename(dir_stack, filename):
     if filename in cwd:
         raise ValueError('collision on name {} in {}'.format(
                 filename, ':'.join(d for d,cwd in dir_stack)))
+
+def walk(filesystem, callback, dirpath=None):
+    """Walk a packed experiment filesystem, operating on each key,value pair.
+    """
+    if dirpath is None:
+        dirpath = []
+    for key,value in sorted((_bytes(k),v) for k,v in filesystem.items()):
+        callback(dirpath, key, value)
+        if isinstance(value, dict):
+            walk(filesystem=value, callback=callback, dirpath=dirpath+[key])

@@ -110,3 +110,19 @@ def checksum(buffer, byte_order, oldcksum, numbytes):
         if oldcksum > 2**31:
             oldcksum -= 2**31
     return oldcksum & 0xffff
+
+def _bytes(obj, encoding='utf-8'):
+    """Convert bytes or strings into bytes
+
+    >>> _bytes(b'123')
+    '123'
+    >>> _bytes('123')
+    '123'
+    """
+    if _sys.version_info >= (3,):
+        if isinstance(obj, bytes):
+            return obj
+        else:
+            return bytes(obj, encoding)
+    else:
+        return bytes(obj)
