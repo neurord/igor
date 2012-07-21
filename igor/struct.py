@@ -34,9 +34,6 @@ import numpy as _numpy
 from . import LOG as _LOG
 
 
-_buffer = buffer  # save builtin buffer for clobbered situations
-
-
 class Field (object):
     """Represent a Structure field.
 
