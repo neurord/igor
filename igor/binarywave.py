@@ -82,10 +82,10 @@ class StaticStringField (_DynamicField):
                 if end > start:
                     strings.append(d[start:end])
                     if self._null_terminated:
-                        strings[-1] = strings[-1].split('\x00', 1)[0]
+                        strings[-1] = strings[-1].split(b'\x00', 1)[0]
                     start = end
         elif self._null_terminated:
-            d = d.split('\x00', 1)[0]
+            d = d.split(b'\x00', 1)[0]
         return d
 
 

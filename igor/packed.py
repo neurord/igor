@@ -67,7 +67,7 @@ def load(filename, strict=True, ignore_unknown=True):
         while True:
             PackedFileRecordHeader.byte_order = initial_byte_order
             PackedFileRecordHeader.setup()
-            b = buffer(f.read(PackedFileRecordHeader.size))
+            b = bytes(f.read(PackedFileRecordHeader.size))
             if not b:
                 break
             if len(b) < PackedFileRecordHeader.size:
@@ -88,7 +88,7 @@ def load(filename, strict=True, ignore_unknown=True):
                     header = PackedFileRecordHeader.unpack_from(b)
                     _LOG.debug(
                         'reordered version: {}'.format(header['version']))
-            data = buffer(f.read(header['numDataBytes']))
+            data = bytes(f.read(header['numDataBytes']))
             if len(data) < header['numDataBytes']:
                 raise ValueError(
                     ('not enough data for the next record ({} < {})'
