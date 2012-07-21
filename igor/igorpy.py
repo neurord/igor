@@ -16,6 +16,7 @@ PTN003.ifn and TN003.ifn.
 from __future__ import absolute_import
 import io as _io
 import re as _re
+import sys as _sys
 
 import numpy as _numpy
 
@@ -222,9 +223,9 @@ def load(filename, **kwargs):
     try:
         packed_experiment = _load(filename)
     except ValueError as e:
-        if e.message.startswith('not enough data for the next record header'):
+        if e.args[0].startswith('not enough data for the next record header'):
             raise IOError('invalid record header; bad pxp file?')
-        elif e.message.startswith('not enough data for the next record'):
+        elif e.args[0].startswith('not enough data for the next record'):
             raise IOError('final record too long; bad pxp file?')
         raise
     return _convert(packed_experiment, **kwargs)
