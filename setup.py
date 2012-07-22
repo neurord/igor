@@ -56,6 +56,7 @@ setup(name=package_name,
         ],
       scripts=[
         'bin/igorbinarywave.py',
+        'bin/igorpackedexperiment.py',
         ],
       provides=['igor (%s)' % __version__],
       )
