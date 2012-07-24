@@ -21,8 +21,6 @@
 
 import pprint
 
-import numpy
-
 from igor.packed import load, walk
 from igor.record.wave import WaveRecord
 from igor.script import Script
