@@ -93,9 +93,9 @@ you'll have to clone the Git repository or download a snapshot.
 Licence
 =======
 
-This project is distributed under the `GNU General Public License
-Version 3`_ or greater, see the ``COPYING`` file distributed with the
-project for details.
+This project is distributed under the `GNU Lesser General Public
+License Version 3`_ or greater, see the ``COPYING`` file distributed
+with the project for details.
 
 Maintenance
 ===========
@@ -133,5 +133,6 @@ This will place a new version on PyPI.
 .. _homepage: http://blog.tremily.us/posts/igor/
 .. _pip: http://pypi.python.org/pypi/pip
 .. _igor.py: http://pypi.python.org/pypi/igor.py
-.. _GNU General Public License Version 3: http://www.gnu.org/licenses/gpl.txt
+.. _GNU Lesser General Public License Version 3:
+    http://www.gnu.org/licenses/lgpl.txt
 .. _update-copyright: http://blog.tremily.us/posts/update-copyright/
