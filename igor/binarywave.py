@@ -458,15 +458,22 @@ class DynamicLabelsField (DynamicStringField):
         wave_structure = parents[-1]
         wave_data = self._get_structure_data(parents, data, wave_structure)
         bin_header = wave_data['bin_header']
-        d = b''.join(wave_data[self.name])
+        d = wave_data[self.name]
         dim_labels = []
         start = 0
         for size in bin_header[self._size_field]:
             end = start + size
             if end > start:
                 dim_data = d[start:end]
-                # split null-delimited strings
-                labels = dim_data.split(b'\x00')
+                chunks = []
+                for i in range(size//32):
+                    chunks.append(dim_data[32*i:32*(i+1)])
+                labels = [b'']
+                for chunk in chunks:
+                    labels[-1] = labels[-1] + b''.join(chunk)
+                    if b'\x00' in chunk:
+                        labels.append(b'')
+                labels.pop(-1)
                 start = end
             else:
                 labels = []
