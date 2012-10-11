@@ -54,7 +54,7 @@ standard::
 
     $ python setup.py install
 
-You can also automate this installation with pip_.
+You can also automate this installation with pip_::
 
     $ pip install igor
 
