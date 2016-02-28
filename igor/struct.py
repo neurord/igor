@@ -395,11 +395,11 @@ class Structure (_struct.Struct):
     The structures automatically calculate the flattened data format:
 
     >>> run.format
-    '@Ihhhhhh'
+    b'@Ihhhhhh'
     >>> run.size  # 4 + 2*3*2
     16
     >>> experiment.format
-    '@HIhhhhhhIhhhhhh'
+    b'@HIhhhhhhIhhhhhh'
     >>> experiment.size  # 2 + 2 + 2*(4 + 2*3*2)
     36
 
@@ -448,15 +448,15 @@ class Structure (_struct.Struct):
 
     >>> experiment.pack_into(buffer=b, data=d)
     >>> b.tostring()[:17]
-    '\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10'
+    b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10'
     >>> b.tostring()[17:]
-    '\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !'
+    b'\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !'
     >>> run0 = d['runs'].pop(0)
     >>> b = experiment.pack(data=d)
     >>> b[:17]
-    '\x00\x01\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f '
+    b'\x00\x01\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f '
     >>> b[17:]
-    '!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+    b'!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
     If you set ``count=0``, the field is ignored.
 
@@ -464,7 +464,7 @@ class Structure (_struct.Struct):
     ...     version, Field('f', 'ignored', count=0, array=True), runs],
     ...     byte_order='>')
     >>> experiment2.format
-    '>HIhhhhhhIhhhhhh'
+    b'>HIhhhhhhIhhhhhh'
     >>> d = experiment2.unpack(b)
     >>> pprint(d)
     {'ignored': array([], dtype=float64),
@@ -690,9 +690,9 @@ class DynamicStructure (Structure):
 
     >>> d['data'] = [1,2,3,4]
     >>> dynamic_length_vector.pack(d)
-    '\x00\x00\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04'
+    b'\x00\x00\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04'
     >>> dynamic_data_vector.pack(d)
-    '\x00\x00\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04'
+    b'\x00\x00\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04'
 
     The implementation is a good deal more complicated than the one
     for ``Structure``, because we must make multiple calls to

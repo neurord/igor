@@ -115,9 +115,9 @@ def _bytes(obj, encoding='utf-8'):
     """Convert bytes or strings into bytes
 
     >>> _bytes(b'123')
-    '123'
+    b'123'
     >>> _bytes('123')
-    '123'
+    b'123'
     """
     if _sys.version_info >= (3,):
         if isinstance(obj, bytes):
