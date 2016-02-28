@@ -429,7 +429,7 @@ class Structure (_struct.Struct):
                'time': 303240213}],
      'version': 1}
     >>> [hex(x) for x in d['runs'][0]['data'].flat]
-    ['0x607L', '0x809L', '0xa0bL', '0xc0dL', '0xe0fL', '0x1011L']
+    ['0x607', '0x809', '0xa0b', '0xc0d', '0xe0f', '0x1011']
 
     You can also read out from strings:
 
