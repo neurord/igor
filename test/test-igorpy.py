@@ -170,7 +170,7 @@ Try to load a binary wave:
 >>> d = igor.load(path)
 Traceback (most recent call last):
    ...
-IOError: final record too long; bad pxp file?
+OSError: final record too long; bad pxp file?
 """
 
 import os.path
