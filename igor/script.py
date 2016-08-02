@@ -36,8 +36,10 @@ class Script (object):
     log_levels = [_logging.ERROR, _logging.WARNING, _logging.INFO, _logging.DEBUG]
 
     def __init__(self, description=None, filetype='IGOR Binary Wave (.ibw) file'):
-        self.parser = _argparse.ArgumentParser(
-            description=description, version=__version__)
+        self.parser = _argparse.ArgumentParser(description=description)
+        self.parser.add_argument(
+            '--version', action='version',
+            version='%(prog)s {}'.format(__version__))
         self.parser.add_argument(
             '-f', '--infile', metavar='FILE', default='-',
             help='input {}'.format(filetype))
