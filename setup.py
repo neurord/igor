@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2012 Paul Kienzle <pkienzle@nist.gov>
+# Copyright (C) 2011-2016 Paul Kienzle <pkienzle@nist.gov>
 #                         W. Trevor King <wking@tremily.us>
 #
 # This file is part of igor.
